@@ -63,8 +63,8 @@ func tokenize(s string) []Token {
 }
 
 // returns the list of special characters
-func getSpecialChars() [6]rune {
-	return [6]rune{'=', ';', '(', ')', '{', '}'}
+func getSpecialChars() [12]rune {
+	return [12]rune{'=', ';', '(', ')', '{', '}', '*', '.', ',', '+', '-', '/'}
 }
 
 func getCharMap() map[rune]string {
@@ -75,6 +75,12 @@ func getCharMap() map[rune]string {
 		')': "RIGHT_PAREN",
 		'{': "LEFT_BRACE",
 		'}': "RIGHT_BRACE",
+		'*': "STAR",
+		'.': "DOT",
+		',': "COMMA",
+		'+': "PLUS",
+		'-': "MINUS",
+		'/': "SLASH",
 	}
 }
 
