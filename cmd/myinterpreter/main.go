@@ -63,8 +63,8 @@ func tokenize(s string) []Token {
 }
 
 // returns the list of special characters
-func getSpecialChars() [4]rune {
-	return [4]rune{'=', ';', '(', ')'}
+func getSpecialChars() [6]rune {
+	return [6]rune{'=', ';', '(', ')', '{', '}'}
 }
 
 func getCharMap() map[rune]string {
@@ -73,6 +73,8 @@ func getCharMap() map[rune]string {
 		';': "SEMICOLON",
 		'(': "LEFT_PAREN",
 		')': "RIGHT_PAREN",
+		'{': "LEFT_BRACE",
+		'}': "RIGHT_BRACE",
 	}
 }
 
