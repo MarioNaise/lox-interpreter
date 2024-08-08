@@ -84,22 +84,9 @@ func tokenize(s string) ([]Token, []Error) {
 	return append(tokens, "EOF  null"), errors
 }
 
-func isComment(chars []rune, pos int) bool {
-	if pos+1 >= len(chars) {
-		return false
-	}
-	return chars[pos] == '/' && chars[pos+1] == '/'
-}
-
-// returns the position of the end of a comment
-// returns the last position of the given []rune if no newline character is found
-func handleComment(chars []rune, pos int) int {
-	for i, char := range chars[pos:] {
-		if char == '\n' {
-			return pos + i
-		}
-	}
-	return len(chars)
+// returns the list of keywords
+func getKeywords() [1]Keyword {
+	return [1]Keyword{"var"}
 }
 
 // returns the list of special characters
@@ -132,9 +119,12 @@ func getCharMap() map[SpecialChar]string {
 	}
 }
 
-// returns the list of keywords
-func getKeywords() [1]Keyword {
-	return [1]Keyword{"var"}
+// returns true if currenct + next character equals to "//"
+func isComment(chars []rune, pos int) bool {
+	if pos+1 >= len(chars) {
+		return false
+	}
+	return chars[pos] == '/' && chars[pos+1] == '/'
 }
 
 // returns true if a character is a special character
@@ -160,6 +150,17 @@ func isKeywordStartLetter(c rune) bool {
 // returns true if a character is a whitespace character
 func isWhitespace(c rune) bool {
 	return unicode.IsSpace(c) || c == '\t' || c == '\n' || c == '\r'
+}
+
+// returns the position of the end of a comment
+// returns the last position of the given []rune if no newline character is found
+func handleComment(chars []rune, pos int) int {
+	for i, char := range chars[pos:] {
+		if char == '\n' {
+			return pos + i
+		}
+	}
+	return len(chars)
 }
 
 // handles special characters at given position in chars
