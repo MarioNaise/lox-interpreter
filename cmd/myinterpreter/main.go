@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"unicode"
 )
@@ -87,8 +88,8 @@ func tokenize(s string) ([]Token, []Error) {
 }
 
 // returns the list of keywords
-func getKeywords() [1]Keyword {
-	return [1]Keyword{"var"}
+func getKeywords() []Keyword {
+	return []Keyword{"and", "class", "else", "false", "for", "fun", "if", "nil", "or", "print", "return", "super", "this", "true", "var", "while"}
 }
 
 // returns the list of special characters
@@ -262,7 +263,8 @@ func handleNumbers(chars []rune, pos int, tokens []Token) (int, []Token) {
 		if unicode.IsDigit(number[len(number)-1]) && !strings.Contains(string(number), ".") {
 			return fmt.Sprint(string(number), ".0")
 		}
-		return strings.ReplaceAll(string(number), ".00", ".0")
+		reg := regexp.MustCompile("0+$")
+		return reg.ReplaceAllString(string(number), "0")
 	}()))
 
 	return pos, append(tokens, token)
