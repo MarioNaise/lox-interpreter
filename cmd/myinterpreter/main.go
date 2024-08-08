@@ -76,6 +76,8 @@ func tokenize(s string) ([]Token, []Error) {
 			pos, tokens = handleKeywords(chars, pos, tokens)
 		case unicode.IsLetter(c) || c == '_':
 			pos, tokens = handleIdentifier(chars, pos, tokens)
+		case unicode.IsDigit(c):
+			pos, tokens = handleNumbers(chars, pos, tokens)
 		default:
 			errors = append(errors, Error(fmt.Sprintf("[line %d] Error: Unexpected character: %c", line, c)))
 			pos++
@@ -225,4 +227,39 @@ func handleString(chars []rune, pos int, line int, tokens []Token, errors []Erro
 		}
 	}
 	return len(chars), tokens, append(errors, Error(fmt.Sprintf("[line %d] Error: Unterminated string.", line)))
+}
+
+// handles number tokens at given position in chars
+// ends with the next non-digit character, except for '.'
+func handleNumbers(chars []rune, pos int, tokens []Token) (int, []Token) {
+	var dotCount int
+	var number []rune
+	for _, num := range chars[pos:] {
+		number = append(number, num)
+		pos++
+		if pos >= len(chars) {
+			break
+		}
+		c := chars[pos]
+		if c == '.' {
+			dotCount++
+			if dotCount > 1 {
+				break
+			}
+			if pos+1 >= len(chars) || !unicode.IsDigit(chars[pos+1]) {
+				break
+			}
+		}
+		if !unicode.IsDigit(c) && c != '.' {
+			break
+		}
+	}
+	token := Token(fmt.Sprintf("NUMBER %s %s", string(number), func() string {
+		if unicode.IsDigit(number[len(number)-1]) && !strings.Contains(string(number), ".") {
+			return fmt.Sprint(string(number), ".0")
+		}
+		return string(number)
+	}()))
+
+	return pos, append(tokens, token)
 }
