@@ -71,7 +71,7 @@ func tokenize(s string) ([]Token, []Error) {
 		case isSpecialChar(c):
 			pos, tokens = handleSpecialChar(chars, pos, tokens)
 		case c == '"':
-			pos, tokens = handleString(chars, pos, tokens)
+			pos, tokens, errors = handleString(chars, pos, line, tokens, errors)
 		case isKeywordStartLetter(c):
 			pos, tokens = handleKeywords(chars, pos, tokens)
 		case unicode.IsLetter(c) || c == '_':
@@ -208,16 +208,20 @@ func handleIdentifier(chars []rune, pos int, tokens []Token) (int, []Token) {
 // handles string tokens at given position in chars
 // ends when it finds a non-escaped double quote
 // returns the new position in chars
-func handleString(chars []rune, pos int, tokens []Token) (int, []Token) {
+func handleString(chars []rune, pos int, line int, tokens []Token, errors []Error) (int, []Token, []Error) {
 	var value []rune
-	for {
-		value = append(value, chars[pos])
+	for _, char := range chars[pos:] {
+		value = append(value, char)
 		pos++
+		if pos >= len(chars) {
+			break
+		}
 		c := chars[pos]
 		if c == '"' && rune(chars[pos-1]) != '\\' {
 			value = append(value, chars[pos])
 			token := Token(fmt.Sprintf("STRING %s %s", string(value), string(value[1:len(value)-1])))
-			return pos + 1, append(tokens, token)
+			return pos + 1, append(tokens, token), errors
 		}
 	}
+	return len(chars), tokens, append(errors, Error(fmt.Sprintf("[line %d] Error: Unterminated string.", line)))
 }
