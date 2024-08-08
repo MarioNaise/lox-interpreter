@@ -7,7 +7,10 @@ import (
 	"unicode"
 )
 
-type Token string
+type (
+	Token string
+	Error string
+)
 
 func main() {
 	if len(os.Args) < 3 {
@@ -30,22 +33,35 @@ func main() {
 	}
 
 	text := string(fileContents)
-	tokens := tokenize(text)
+	tokens, errors := tokenize(text)
+
 	for _, token := range tokens {
 		fmt.Println(token)
 	}
+	if len(errors) > 0 {
+		for _, error := range errors {
+			fmt.Fprintf(os.Stderr, "%s\n", error)
+		}
+		os.Exit(65)
+	}
+	os.Exit(0)
 }
 
-func tokenize(s string) []Token {
+func tokenize(s string) ([]Token, []Error) {
+	line := 1
 	var tokens []Token
+	var errors []Error
 	if s == "" {
-		return append(tokens, "EOF  null")
+		return append(tokens, "EOF  null"), errors
 	}
 	chars := []rune(s)
 	var pos int
 	for pos < len(chars) {
 		switch c := chars[pos]; {
 		case isWhitespace(c):
+			if c == '\n' {
+				line++
+			}
 			pos++
 		case isSpecialChar(c):
 			pos, tokens = handleSpecialChar(c, pos, tokens)
@@ -56,10 +72,11 @@ func tokenize(s string) []Token {
 		case unicode.IsLetter(c) || c == '_':
 			pos, tokens = handleIdentifier(chars, pos, tokens)
 		default:
+			errors = append(errors, Error(fmt.Sprintf("[line %d] Error: Unexpected character: %c", line, c)))
 			pos++
 		}
 	}
-	return append(tokens, "EOF  null")
+	return append(tokens, "EOF  null"), errors
 }
 
 // returns the list of special characters
