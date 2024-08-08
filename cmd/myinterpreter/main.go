@@ -8,8 +8,10 @@ import (
 )
 
 type (
-	Token string
-	Error string
+	Token       string
+	Error       string
+	Keyword     string
+	SpecialChar string
 )
 
 func main() {
@@ -47,6 +49,7 @@ func main() {
 	os.Exit(0)
 }
 
+// returns a list or tokens and errors from a string
 func tokenize(s string) ([]Token, []Error) {
 	line := 1
 	var tokens []Token
@@ -80,14 +83,20 @@ func tokenize(s string) ([]Token, []Error) {
 }
 
 // returns the list of special characters
-func getSpecialChars() [13]string {
-	return [13]string{"==", "=", ";", "(", ")", "{", "}", "*", ".", ",", "+", "-", "/"}
+func getSpecialChars() []SpecialChar {
+	return []SpecialChar{"!=", "==", ">=", "<=", ">", "<", "!", "=", ";", "(", ")", "{", "}", "*", ".", ",", "+", "-", "/"}
 }
 
 // returns the mapping for special characters
-func getCharMap() map[string]string {
-	return map[string]string{
+func getCharMap() map[SpecialChar]string {
+	return map[SpecialChar]string{
 		"==": "EQUAL_EQUAL",
+		"!=": "BANG_EQUAL",
+		">=": "GREATER_EQUAL",
+		"<=": "LESS_EQUAL",
+		">":  "GREATER",
+		"<":  "LESS",
+		"!":  "BANG",
 		"=":  "EQUAL",
 		";":  "SEMICOLON",
 		"(":  "LEFT_PAREN",
@@ -104,8 +113,8 @@ func getCharMap() map[string]string {
 }
 
 // returns the list of keywords
-func getKeywords() [1]string {
-	return [1]string{"var"}
+func getKeywords() [1]Keyword {
+	return [1]Keyword{"var"}
 }
 
 // returns true if a character is a special character
@@ -139,7 +148,7 @@ func handleSpecialChar(chars []rune, pos int, tokens []Token) (int, []Token) {
 	charMap := getCharMap()
 	specialChars := getSpecialChars()
 	for _, specialChar := range specialChars {
-		if string(chars[pos:pos+len(specialChar)]) == specialChar {
+		if SpecialChar(chars[pos:pos+len(specialChar)]) == specialChar {
 			token := Token(fmt.Sprintf("%s %s %s", charMap[specialChar], specialChar, "null"))
 			return pos + len(specialChar), append(tokens, token)
 		}
@@ -152,8 +161,8 @@ func handleSpecialChar(chars []rune, pos int, tokens []Token) (int, []Token) {
 // returns the new position in chars
 func handleKeywords(chars []rune, pos int, tokens []Token) (int, []Token) {
 	for _, keyword := range getKeywords() {
-		if string(chars[pos:pos+len(keyword)]) == keyword {
-			token := Token(fmt.Sprintf("%s %s %s", strings.ToUpper(keyword), keyword, "null"))
+		if Keyword(chars[pos:pos+len(keyword)]) == keyword {
+			token := Token(fmt.Sprintf("%s %s %s", strings.ToUpper(string(keyword)), keyword, "null"))
 			return pos + len(keyword), append(tokens, token)
 		}
 	}
