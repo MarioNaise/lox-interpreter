@@ -64,7 +64,7 @@ func tokenize(s string) ([]Token, []Error) {
 			}
 			pos++
 		case isSpecialChar(c):
-			pos, tokens = handleSpecialChar(c, pos, tokens)
+			pos, tokens = handleSpecialChar(chars, pos, tokens)
 		case c == '"':
 			pos, tokens = handleString(chars, pos, tokens)
 		case isKeywordStartLetter(c):
@@ -80,24 +80,26 @@ func tokenize(s string) ([]Token, []Error) {
 }
 
 // returns the list of special characters
-func getSpecialChars() [12]rune {
-	return [12]rune{'=', ';', '(', ')', '{', '}', '*', '.', ',', '+', '-', '/'}
+func getSpecialChars() [13]string {
+	return [13]string{"==", "=", ";", "(", ")", "{", "}", "*", ".", ",", "+", "-", "/"}
 }
 
-func getCharMap() map[rune]string {
-	return map[rune]string{
-		'=': "EQUAL",
-		';': "SEMICOLON",
-		'(': "LEFT_PAREN",
-		')': "RIGHT_PAREN",
-		'{': "LEFT_BRACE",
-		'}': "RIGHT_BRACE",
-		'*': "STAR",
-		'.': "DOT",
-		',': "COMMA",
-		'+': "PLUS",
-		'-': "MINUS",
-		'/': "SLASH",
+// returns the mapping for special characters
+func getCharMap() map[string]string {
+	return map[string]string{
+		"==": "EQUAL_EQUAL",
+		"=":  "EQUAL",
+		";":  "SEMICOLON",
+		"(":  "LEFT_PAREN",
+		")":  "RIGHT_PAREN",
+		"{":  "LEFT_BRACE",
+		"}":  "RIGHT_BRACE",
+		"*":  "STAR",
+		".":  "DOT",
+		",":  "COMMA",
+		"+":  "PLUS",
+		"-":  "MINUS",
+		"/":  "SLASH",
 	}
 }
 
@@ -109,7 +111,7 @@ func getKeywords() [1]string {
 // returns true if a character is a special character
 func isSpecialChar(char rune) bool {
 	for _, specialChar := range getSpecialChars() {
-		if char == specialChar {
+		if char == rune(specialChar[0]) {
 			return true
 		}
 	}
@@ -133,10 +135,16 @@ func isWhitespace(c rune) bool {
 
 // handles special characters at given position in chars
 // returns the new position in chars
-func handleSpecialChar(char rune, pos int, tokens []Token) (int, []Token) {
+func handleSpecialChar(chars []rune, pos int, tokens []Token) (int, []Token) {
 	charMap := getCharMap()
-	token := Token(fmt.Sprintf("%s %s %s", charMap[char], string(char), "null"))
-	return pos + 1, append(tokens, token)
+	specialChars := getSpecialChars()
+	for _, specialChar := range specialChars {
+		if string(chars[pos:pos+len(specialChar)]) == specialChar {
+			token := Token(fmt.Sprintf("%s %s %s", charMap[specialChar], specialChar, "null"))
+			return pos + len(specialChar), append(tokens, token)
+		}
+	}
+	return pos + 1, tokens
 }
 
 // checks chars for a keyword token at given position in chars
