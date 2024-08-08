@@ -61,6 +61,8 @@ func tokenize(s string) ([]Token, []Error) {
 	var pos int
 	for pos < len(chars) {
 		switch c := chars[pos]; {
+		case isComment(chars, pos):
+			pos = handleComment(chars, pos)
 		case isWhitespace(c):
 			if c == '\n' {
 				line++
@@ -80,6 +82,24 @@ func tokenize(s string) ([]Token, []Error) {
 		}
 	}
 	return append(tokens, "EOF  null"), errors
+}
+
+func isComment(chars []rune, pos int) bool {
+	if pos+1 >= len(chars) {
+		return false
+	}
+	return chars[pos] == '/' && chars[pos+1] == '/'
+}
+
+// returns the position of the end of a comment
+// returns the last position of the given []rune if no newline character is found
+func handleComment(chars []rune, pos int) int {
+	for i, char := range chars[pos:] {
+		if char == '\n' {
+			return pos + i
+		}
+	}
+	return len(chars)
 }
 
 // returns the list of special characters
