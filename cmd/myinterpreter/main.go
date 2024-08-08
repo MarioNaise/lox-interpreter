@@ -197,15 +197,19 @@ func handleKeywords(chars []rune, pos int, tokens []Token) (int, []Token) {
 // returns the new position in chars
 func handleIdentifier(chars []rune, pos int, tokens []Token) (int, []Token) {
 	var identifier []rune
-	for {
-		identifier = append(identifier, chars[pos])
+	for _, char := range chars[pos:] {
+		identifier = append(identifier, char)
 		pos++
+		if pos >= len(chars) {
+			break
+		}
 		c := chars[pos]
-		if !unicode.IsLetter(c) && c != '_' {
-			token := Token(fmt.Sprintf("IDENTIFIER %s %s", string(identifier), "null"))
-			return pos + 1, append(tokens, token)
+		if !unicode.IsLetter(c) && !unicode.IsDigit(c) && c != '_' {
+			break
 		}
 	}
+	token := Token(fmt.Sprintf("IDENTIFIER %s %s", string(identifier), "null"))
+	return pos, append(tokens, token)
 }
 
 // handles string tokens at given position in chars
@@ -258,7 +262,7 @@ func handleNumbers(chars []rune, pos int, tokens []Token) (int, []Token) {
 		if unicode.IsDigit(number[len(number)-1]) && !strings.Contains(string(number), ".") {
 			return fmt.Sprint(string(number), ".0")
 		}
-		return string(number)
+		return strings.ReplaceAll(string(number), ".00", ".0")
 	}()))
 
 	return pos, append(tokens, token)
