@@ -18,6 +18,8 @@ func main() {
 	switch command {
 	case "tokenize":
 		handleTokenizeCommand()
+	case "parse":
+		handleParseCommand()
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
@@ -34,6 +36,22 @@ func handleTokenizeCommand() {
 
 	text := string(fileContents)
 	ok := lox.Tokenize(text)
+	if !ok {
+		os.Exit(65)
+	}
+	os.Exit(0)
+}
+
+func handleParseCommand() {
+	filename := os.Args[2]
+	fileContents, err := os.ReadFile(filename)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
+		os.Exit(1)
+	}
+
+	text := string(fileContents)
+	ok := lox.Parse(text)
 	if !ok {
 		os.Exit(65)
 	}

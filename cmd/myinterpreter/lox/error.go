@@ -11,6 +11,6 @@ func newError(message string, line int) loxError {
 	return loxError{message: message, line: line}
 }
 
-func (e loxError) ToString() string {
+func (e loxError) String() string {
 	return fmt.Sprintf("[line %d] Error: %s", e.line, e.message)
 }

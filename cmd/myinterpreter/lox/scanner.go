@@ -7,14 +7,6 @@ import (
 	"unicode"
 )
 
-const (
-	STRING     = "STRING"
-	IDENTIFIER = "IDENTIFIER"
-	NUMBER     = "NUMBER"
-	EOF        = "EOF"
-	NULL       = "null"
-)
-
 type scanner struct {
 	specaCharTokenTypes map[string]string
 	commentString       string
