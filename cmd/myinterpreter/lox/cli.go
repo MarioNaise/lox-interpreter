@@ -2,23 +2,25 @@ package lox
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
 
-// turns a string into a list of tokens and errors, returns true if no errors
-func Tokenize(str string) bool {
-	s := newLoxScanner()
-	s.tokenize(str)
-	printTokens(s.tokens)
-	printErrors(s.errors)
+func Tokenize(r io.Reader) bool {
+	s := newScanner(r)
+	s.tokenize()
+	for _, token := range s.tokens {
+		fmt.Println(token)
+	}
+	for _, error := range s.errors {
+		fmt.Fprintln(os.Stderr, error)
+	}
 	return len(s.errors) == 0
 }
 
-// tokenizes a string, then parses the tokens into an expression
-// returns true if no errors
-func Parse(str string) bool {
-	p := parser{}
-	p.parse(str)
+func Parse(r io.Reader) bool {
+	p := newParser(r)
+	p.parse()
 	if len(p.parseErrors) == 0 {
 		fmt.Println(p.expression)
 	}
@@ -26,18 +28,4 @@ func Parse(str string) bool {
 		fmt.Fprintln(os.Stderr, error)
 	}
 	return len(p.parseErrors) == 0 && len(p.errors) == 0
-}
-
-// prints a list of tokens
-func printTokens(tokens []token) {
-	for _, token := range tokens {
-		fmt.Println(token)
-	}
-}
-
-// prints a list of errors
-func printErrors(errors []loxError) {
-	for _, error := range errors {
-		fmt.Fprintln(os.Stderr, error)
-	}
 }

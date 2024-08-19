@@ -2,18 +2,18 @@ package lox
 
 import (
 	"fmt"
+	"io"
 )
 
 type parser struct {
+	*scanner
 	expression  exprInterface
 	parseErrors []string
-	scanner
-	current int
+	current     int
 }
 
-func (p *parser) parse(str string) {
-	p.scanner = newLoxScanner()
-	p.tokenize(str)
+func (p *parser) parse() {
+	p.tokenize()
 	p.expression = p.equality()
 }
 
@@ -125,4 +125,8 @@ func (p *parser) consume(t string, err string) token {
 	}
 	p.parseErrors = append(p.parseErrors, fmt.Sprintf("Error: %s", err))
 	return token{}
+}
+
+func newParser(r io.Reader) *parser {
+	return &parser{scanner: newScanner(r)}
 }

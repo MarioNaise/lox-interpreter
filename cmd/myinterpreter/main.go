@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/lox"
 )
@@ -27,15 +29,8 @@ func main() {
 }
 
 func handleTokenizeCommand() {
-	filename := os.Args[2]
-	fileContents, err := os.ReadFile(filename)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
-		os.Exit(1)
-	}
-
-	text := string(fileContents)
-	ok := lox.Tokenize(text)
+	r := getFileReader(os.Args[2])
+	ok := lox.Tokenize(r)
 	if !ok {
 		os.Exit(65)
 	}
@@ -43,17 +38,19 @@ func handleTokenizeCommand() {
 }
 
 func handleParseCommand() {
-	filename := os.Args[2]
-	fileContents, err := os.ReadFile(filename)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
-		os.Exit(1)
-	}
-
-	text := string(fileContents)
-	ok := lox.Parse(text)
+	r := getFileReader(os.Args[2])
+	ok := lox.Parse(r)
 	if !ok {
 		os.Exit(65)
 	}
 	os.Exit(0)
+}
+
+func getFileReader(filename string) io.Reader {
+	fileContents, err := os.ReadFile(filename)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	return strings.NewReader(string(fileContents))
 }
