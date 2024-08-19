@@ -18,7 +18,7 @@ type scanner struct {
 	*bufio.Scanner
 	specCharTokenTypes map[string]string
 	tokens             []token
-	errors             []loxError
+	scanErrors         []loxError
 	regexRules         []regexRule
 	keywords           []string
 	specialChars       []string
@@ -58,11 +58,11 @@ outer:
 		}
 		if !valueFound {
 			if s.Text()[s.current:s.current+1] == `"` {
-				s.errors = append(s.errors, newError("Unterminated string.", s.line))
+				s.scanErrors = append(s.scanErrors, newError("Unterminated string.", s.line))
 				s.current++
 				break outer
 			} else {
-				s.errors = append(s.errors, newError("Unexpected character: "+string(s.Text()[s.current]), s.line))
+				s.scanErrors = append(s.scanErrors, newError("Unexpected character: "+string(s.Text()[s.current]), s.line))
 				s.current++
 			}
 		}
@@ -110,7 +110,7 @@ func newScanner(r io.Reader) *scanner {
 		{regex: `\d+(\.\d+)?`, handler: l.numberHandler},
 	}
 
-	l.keywords = []string{AND, CLASS, ELSE, FALSE, FOR, FUN, IF, NIL, OR, RETURN, SUPER, THIS, TRUE, VAR, WHILE}
+	l.keywords = []string{AND, CLASS, ELSE, FALSE, FOR, FUN, IF, NIL, OR, PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE}
 	for _, keyword := range l.keywords {
 		regexRules = append(regexRules, regexRule{regex: strings.ToLower(keyword), handler: l.defaultHandler})
 	}

@@ -22,6 +22,8 @@ func main() {
 		handleTokenizeCommand()
 	case "parse":
 		handleParseCommand()
+	case "evaluate":
+		handleEvaluateCommand()
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
@@ -40,6 +42,15 @@ func handleTokenizeCommand() {
 func handleParseCommand() {
 	r := getFileReader(os.Args[2])
 	ok := lox.Parse(r)
+	if !ok {
+		os.Exit(65)
+	}
+	os.Exit(0)
+}
+
+func handleEvaluateCommand() {
+	r := getFileReader(os.Args[2])
+	ok := lox.Evaluate(r)
 	if !ok {
 		os.Exit(65)
 	}

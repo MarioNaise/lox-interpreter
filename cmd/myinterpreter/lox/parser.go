@@ -17,7 +17,7 @@ func (p *parser) parse() {
 }
 
 func (p *parser) equality() exprInterface {
-	expr = p.comparison()
+	expr := p.comparison()
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
 		right := p.comparison()
@@ -27,7 +27,7 @@ func (p *parser) equality() exprInterface {
 }
 
 func (p *parser) comparison() exprInterface {
-	expr = p.term()
+	expr := p.term()
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		operator := p.previous()
 		right := p.term()
@@ -37,7 +37,7 @@ func (p *parser) comparison() exprInterface {
 }
 
 func (p *parser) term() exprInterface {
-	expr = p.factor()
+	expr := p.factor()
 	for p.match(MINUS, PLUS) {
 		operator := p.previous()
 		right := p.factor()
@@ -67,10 +67,10 @@ func (p *parser) unary() exprInterface {
 
 func (p *parser) primary() exprInterface {
 	if p.match(FALSE, TRUE, NIL, NUMBER, STRING) {
-		return &expression{nil, nil, p.previous()}
+		return &expressionLiteral{&expression{nil, nil, p.previous()}}
 	}
 	if p.match(LEFT_PAREN) {
-		expr := &groupExpression{p.equality()}
+		expr := &expressionGroup{p.equality()}
 		p.consume(RIGHT_PAREN, "Unmatched parenthesis.")
 		return expr
 	}

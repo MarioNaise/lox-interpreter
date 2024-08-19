@@ -6,6 +6,8 @@ import (
 
 type exprInterface interface {
 	fmt.Stringer
+	evaluate() string
+	get() expression
 }
 
 type expression struct {
@@ -24,6 +26,14 @@ func (e *expression) String() string {
 	return e.parenthesized()
 }
 
+func (e *expression) evaluate() string {
+	return ""
+}
+
+func (e *expression) get() expression {
+	return *e
+}
+
 func (e *expression) primary() string {
 	if e.operator.literal != NULL {
 		return e.operator.literal
@@ -39,12 +49,4 @@ func (e *expression) parenthesized() string {
 		return fmt.Sprintf("(%s %s)", e.operator.lexeme, e.expression.String())
 	}
 	return fmt.Sprintf("(%s %s %s)", e.operator.lexeme, e.expression.String(), e.right.String())
-}
-
-type groupExpression struct {
-	expr exprInterface
-}
-
-func (g groupExpression) String() string {
-	return fmt.Sprintf("(group %s)", g.expr)
 }
