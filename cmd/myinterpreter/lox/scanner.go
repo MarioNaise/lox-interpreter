@@ -83,7 +83,7 @@ func (s *scanner) stringHandler(val string) {
 
 func (s *scanner) identifierHandler(val string) {
 	for _, keyword := range s.keywords {
-		if keyword == val {
+		if strings.ToLower(keyword) == val {
 			s.defaultHandler(val)
 			return
 		}
@@ -110,9 +110,9 @@ func newScanner(r io.Reader) *scanner {
 		{regex: `\d+(\.\d+)?`, handler: l.numberHandler},
 	}
 
-	(*l).keywords = []string{"and", "class", "else", "false", "for", "fun", "if", "nil", "or", "print", "return", "super", "this", "true", "var", "while"}
+	l.keywords = []string{AND, CLASS, ELSE, FALSE, FOR, FUN, IF, NIL, OR, RETURN, SUPER, THIS, TRUE, VAR, WHILE}
 	for _, keyword := range l.keywords {
-		regexRules = append(regexRules, regexRule{regex: keyword, handler: l.defaultHandler})
+		regexRules = append(regexRules, regexRule{regex: strings.ToLower(keyword), handler: l.defaultHandler})
 	}
 
 	l.specialChars = []string{`\!=`, `==`, `>=`, `<=`, `>`, `<`, `\!`, `=`, `;`, `\(`, `\)`, `{`, `}`, `\*`, `\.`, `,`, `\+`, `-`, `/`}
@@ -122,25 +122,25 @@ func newScanner(r io.Reader) *scanner {
 
 	l.regexRules = regexRules
 	l.specCharTokenTypes = map[string]string{
-		"==": "EQUAL_EQUAL",
-		"!=": "BANG_EQUAL",
-		">=": "GREATER_EQUAL",
-		"<=": "LESS_EQUAL",
-		">":  "GREATER",
-		"<":  "LESS",
-		"!":  "BANG",
-		"=":  "EQUAL",
-		";":  "SEMICOLON",
-		"(":  "LEFT_PAREN",
-		")":  "RIGHT_PAREN",
-		"{":  "LEFT_BRACE",
-		"}":  "RIGHT_BRACE",
-		"*":  "STAR",
-		".":  "DOT",
-		",":  "COMMA",
-		"+":  "PLUS",
-		"-":  "MINUS",
-		"/":  "SLASH",
+		"==": EQUAL_EQUAL,
+		"!=": BANG_EQUAL,
+		">=": GREATER_EQUAL,
+		"<=": LESS_EQUAL,
+		">":  GREATER,
+		"<":  LESS,
+		"!":  BANG,
+		"=":  EQUAL,
+		";":  SEMICOLON,
+		"(":  LEFT_PAREN,
+		")":  RIGHT_PAREN,
+		"{":  LEFT_BRACE,
+		"}":  RIGHT_BRACE,
+		"*":  STAR,
+		".":  DOT,
+		",":  COMMA,
+		"+":  PLUS,
+		"-":  MINUS,
+		"/":  SLASH,
 	}
 
 	return l

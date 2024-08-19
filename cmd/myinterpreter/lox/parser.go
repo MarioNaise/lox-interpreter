@@ -17,8 +17,8 @@ func (p *parser) parse() {
 }
 
 func (p *parser) equality() exprInterface {
-	expr := p.comparison()
-	for p.match("BANG_EQUAL", "EQUAL_EQUAL") {
+	expr = p.comparison()
+	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
 		right := p.comparison()
 		expr = &expression{expr, right, operator}
@@ -27,8 +27,8 @@ func (p *parser) equality() exprInterface {
 }
 
 func (p *parser) comparison() exprInterface {
-	expr := p.term()
-	for p.match("GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL") {
+	expr = p.term()
+	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		operator := p.previous()
 		right := p.term()
 		expr = &expression{expr, right, operator}
@@ -37,8 +37,8 @@ func (p *parser) comparison() exprInterface {
 }
 
 func (p *parser) term() exprInterface {
-	expr := p.factor()
-	for p.match("MINUS", "PLUS") {
+	expr = p.factor()
+	for p.match(MINUS, PLUS) {
 		operator := p.previous()
 		right := p.factor()
 		expr = &expression{expr, right, operator}
@@ -48,7 +48,7 @@ func (p *parser) term() exprInterface {
 
 func (p *parser) factor() exprInterface {
 	expr := p.unary()
-	for p.match("SLASH", "STAR") {
+	for p.match(SLASH, STAR) {
 		operator := p.previous()
 		right := p.unary()
 		expr = &expression{expr, right, operator}
@@ -57,7 +57,7 @@ func (p *parser) factor() exprInterface {
 }
 
 func (p *parser) unary() exprInterface {
-	if p.match("BANG", "MINUS") {
+	if p.match(BANG, MINUS) {
 		operator := p.previous()
 		right := p.unary()
 		return &expression{nil, right, operator}
@@ -66,12 +66,12 @@ func (p *parser) unary() exprInterface {
 }
 
 func (p *parser) primary() exprInterface {
-	if p.match("FALSE", "TRUE", "NIL", "NUMBER", "STRING") {
+	if p.match(FALSE, TRUE, NIL, NUMBER, STRING) {
 		return &expression{nil, nil, p.previous()}
 	}
-	if p.match("LEFT_PAREN") {
-		expr := groupExpression{p.equality()}
-		p.consume("RIGHT_PAREN", "Unmatched parenthesis.")
+	if p.match(LEFT_PAREN) {
+		expr := &groupExpression{p.equality()}
+		p.consume(RIGHT_PAREN, "Unmatched parenthesis.")
 		return expr
 	}
 	p.parseErrors = append(p.parseErrors, newError("at '"+p.peek().lexeme+"' - Expected expression.", p.peek().line))
