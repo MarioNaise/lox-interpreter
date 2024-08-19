@@ -1,14 +1,13 @@
 package lox
 
 import (
-	"fmt"
 	"io"
 )
 
 type parser struct {
 	*scanner
 	expression  exprInterface
-	parseErrors []string
+	parseErrors []loxError
 	current     int
 }
 
@@ -75,7 +74,7 @@ func (p *parser) primary() exprInterface {
 		p.consume("RIGHT_PAREN", "Unmatched parenthesis.")
 		return expr
 	}
-	p.parseErrors = append(p.parseErrors, fmt.Sprintf("Error at '%s': Expected expression.", p.peek().lexeme))
+	p.parseErrors = append(p.parseErrors, newError("at '"+p.peek().lexeme+"' - Expected expression.", p.peek().line))
 	return nil
 }
 
@@ -123,7 +122,7 @@ func (p *parser) consume(t string, err string) token {
 		p.advance()
 		return p.previous()
 	}
-	p.parseErrors = append(p.parseErrors, fmt.Sprintf("Error: %s", err))
+	p.parseErrors = append(p.parseErrors, newError(err, p.peek().line))
 	return token{}
 }
 

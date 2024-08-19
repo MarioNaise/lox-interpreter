@@ -37,7 +37,7 @@ func (s *scanner) tokenize() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	s.tokens = append(s.tokens, newToken(EOF, "", NULL))
+	s.tokens = append(s.tokens, newToken(EOF, "", NULL, s.line))
 }
 
 func (s *scanner) ScanLine() {
@@ -70,15 +70,15 @@ outer:
 }
 
 func (s *scanner) defaultHandler(val string) {
-	s.tokens = append(s.tokens, newToken(strings.ToUpper(val), val, NULL))
+	s.tokens = append(s.tokens, newToken(strings.ToUpper(val), val, NULL, s.line))
 }
 
 func (s *scanner) specialCharHandler(val string) {
-	s.tokens = append(s.tokens, newToken(s.specCharTokenTypes[val], val, NULL))
+	s.tokens = append(s.tokens, newToken(s.specCharTokenTypes[val], val, NULL, s.line))
 }
 
 func (s *scanner) stringHandler(val string) {
-	s.tokens = append(s.tokens, newToken(STRING, val, val[1:len(val)-1]))
+	s.tokens = append(s.tokens, newToken(STRING, val, val[1:len(val)-1], s.line))
 }
 
 func (s *scanner) identifierHandler(val string) {
@@ -88,7 +88,7 @@ func (s *scanner) identifierHandler(val string) {
 			return
 		}
 	}
-	s.tokens = append(s.tokens, newToken(IDENTIFIER, val, NULL))
+	s.tokens = append(s.tokens, newToken(IDENTIFIER, val, NULL, s.line))
 }
 
 func (s *scanner) numberHandler(val string) {
@@ -96,7 +96,7 @@ func (s *scanner) numberHandler(val string) {
 	literal := addComma.ReplaceAllString(string(val), "$1.0")
 	cutZeros := regexp.MustCompile(`([\d])0*$`)
 	literal = cutZeros.ReplaceAllString(string(literal), "$1")
-	s.tokens = append(s.tokens, newToken(NUMBER, val, literal))
+	s.tokens = append(s.tokens, newToken(NUMBER, val, literal, s.line))
 }
 
 func newScanner(r io.Reader) *scanner {
