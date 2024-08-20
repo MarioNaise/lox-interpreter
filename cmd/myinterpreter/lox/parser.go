@@ -21,7 +21,7 @@ func (p *parser) equality() exprInterface {
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
 		right := p.comparison()
-		expr = &expression{expr, right, operator}
+		return &expressionEquality{&expression{expr, right, operator}}
 	}
 	return expr
 }
@@ -31,7 +31,7 @@ func (p *parser) comparison() exprInterface {
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		operator := p.previous()
 		right := p.term()
-		expr = &expression{expr, right, operator}
+		expr = &expressionComparison{&expression{expr, right, operator}}
 	}
 	return expr
 }
@@ -41,7 +41,7 @@ func (p *parser) term() exprInterface {
 	for p.match(MINUS, PLUS) {
 		operator := p.previous()
 		right := p.factor()
-		expr = &expression{expr, right, operator}
+		expr = &expressionTerm{&expression{expr, right, operator}}
 	}
 	return expr
 }
@@ -51,7 +51,7 @@ func (p *parser) factor() exprInterface {
 	for p.match(SLASH, STAR) {
 		operator := p.previous()
 		right := p.unary()
-		expr = &expression{expr, right, operator}
+		expr = &expressionFactor{&expression{expr, right, operator}}
 	}
 	return expr
 }
@@ -60,7 +60,7 @@ func (p *parser) unary() exprInterface {
 	if p.match(BANG, MINUS) {
 		operator := p.previous()
 		right := p.unary()
-		return &expression{nil, right, operator}
+		return &expressionUnary{&expression{nil, right, operator}}
 	}
 	return p.primary()
 }

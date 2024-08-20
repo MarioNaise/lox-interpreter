@@ -1,13 +1,8 @@
 package lox
 
-import (
-	"fmt"
-)
-
 type exprInterface interface {
-	fmt.Stringer
-	evaluate() string
-	get() expression
+	get() *expression
+	accept(v Visitor) string
 }
 
 type expression struct {
@@ -16,37 +11,78 @@ type expression struct {
 	operator   token
 }
 
-func (e *expression) String() string {
-	if e == nil {
-		return ""
-	}
-	if e.expression == nil && e.right == nil {
-		return e.primary()
-	}
-	return e.parenthesized()
+func (e *expression) get() *expression {
+	return e
 }
 
-func (e *expression) evaluate() string {
-	return ""
+func (e *expression) accept(v Visitor) string {
+	return v.visitExpr(e)
 }
 
-func (e *expression) get() expression {
-	return *e
+type expressionLiteral struct {
+	exprInterface
 }
 
-func (e *expression) primary() string {
-	if e.operator.literal != NULL {
-		return e.operator.literal
-	}
-	return e.operator.lexeme
+func (e *expressionLiteral) accept(v Visitor) string {
+	return v.visitLiteral(e)
 }
 
-func (e *expression) parenthesized() string {
-	if e.expression == nil {
-		return fmt.Sprintf("(%s %s)", e.operator.lexeme, e.right.String())
-	}
-	if e.right == nil {
-		return fmt.Sprintf("(%s %s)", e.operator.lexeme, e.expression.String())
-	}
-	return fmt.Sprintf("(%s %s %s)", e.operator.lexeme, e.expression.String(), e.right.String())
+type expressionGroup struct {
+	exprInterface
+}
+
+func (e *expressionGroup) accept(v Visitor) string {
+	return v.visitGroup(e)
+}
+
+//	func (e *expressionLiteral) evaluate() string {
+//		regexNr := regexp.MustCompile(`\.0$`)
+//		operator := e.get().operator
+//		switch operator.tokenType {
+//		case STRING:
+//			return operator.literal
+//		case NUMBER:
+//			return regexNr.ReplaceAllString(operator.literal, "")
+//		default:
+//			return operator.lexeme
+//		}
+//	}
+type expressionEquality struct {
+	exprInterface
+}
+
+func (e *expressionEquality) accept(v Visitor) string {
+	return v.visitEquality(e)
+}
+
+type expressionComparison struct {
+	exprInterface
+}
+
+func (e *expressionComparison) accept(v Visitor) string {
+	return v.visitComparison(e)
+}
+
+type expressionTerm struct {
+	exprInterface
+}
+
+func (e *expressionTerm) accept(v Visitor) string {
+	return v.visitTerm(e)
+}
+
+type expressionFactor struct {
+	exprInterface
+}
+
+func (e *expressionFactor) accept(v Visitor) string {
+	return v.visitFactor(e)
+}
+
+type expressionUnary struct {
+	exprInterface
+}
+
+func (e *expressionUnary) accept(v Visitor) string {
+	return v.visitUnary(e)
 }

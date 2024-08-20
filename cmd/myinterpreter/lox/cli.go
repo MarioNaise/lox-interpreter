@@ -22,7 +22,8 @@ func Parse(r io.Reader) bool {
 	p := newParser(r)
 	p.parse()
 	if len(p.parseErrors) == 0 {
-		fmt.Println(p.expression)
+		printer := astPrinter{}
+		printer.print(p.expression)
 	}
 	for _, error := range p.parseErrors {
 		fmt.Fprintln(os.Stderr, error)
@@ -33,9 +34,9 @@ func Parse(r io.Reader) bool {
 func Evaluate(r io.Reader) bool {
 	p := newParser(r)
 	p.parse()
-	if len(p.parseErrors) == 0 {
-		fmt.Println(p.expression.evaluate())
-	}
+	// if len(p.parseErrors) == 0 {
+	// 	fmt.Println(p.expression.evaluate())
+	// }
 	for _, error := range p.scanErrors {
 		fmt.Fprintln(os.Stderr, error)
 	}
