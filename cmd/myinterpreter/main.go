@@ -52,7 +52,7 @@ func handleEvaluateCommand() {
 	r := getFileReader(os.Args[2])
 	ok := lox.Evaluate(r)
 	if !ok {
-		os.Exit(65)
+		os.Exit(70)
 	}
 	os.Exit(0)
 }

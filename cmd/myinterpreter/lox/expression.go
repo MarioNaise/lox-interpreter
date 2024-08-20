@@ -35,18 +35,6 @@ func (e *expressionGroup) accept(v Visitor) string {
 	return v.visitGroup(e)
 }
 
-//	func (e *expressionLiteral) evaluate() string {
-//		regexNr := regexp.MustCompile(`\.0$`)
-//		operator := e.get().operator
-//		switch operator.tokenType {
-//		case STRING:
-//			return operator.literal
-//		case NUMBER:
-//			return regexNr.ReplaceAllString(operator.literal, "")
-//		default:
-//			return operator.lexeme
-//		}
-//	}
 type expressionEquality struct {
 	exprInterface
 }
