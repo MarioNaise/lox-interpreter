@@ -26,11 +26,12 @@ type scanner struct {
 	line               int
 }
 
-func (s *scanner) tokenize() {
+func (s *scanner) tokenize() ([]token, []loxError) {
+	s.tokens, s.scanErrors = []token{}, []loxError{}
 	for s.Scan() {
 		s.current = 0
 		s.line++
-		s.ScanLine()
+		s.scanLine()
 
 	}
 	if err := s.Err(); err != nil {
@@ -38,9 +39,10 @@ func (s *scanner) tokenize() {
 		os.Exit(1)
 	}
 	s.tokens = append(s.tokens, newToken(EOF, "", NULL, s.line))
+	return s.tokens, s.scanErrors
 }
 
-func (s *scanner) ScanLine() {
+func (s *scanner) scanLine() {
 outer:
 	for s.current < len(s.Text()) {
 		valueFound := false

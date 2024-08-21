@@ -6,14 +6,14 @@ import (
 
 type parser struct {
 	*scanner
-	expression  exprInterface
 	parseErrors []loxError
 	current     int
 }
 
-func (p *parser) parse() {
+func (p *parser) parse() (exprInterface, []loxError) {
+	p.parseErrors = []loxError{}
 	p.tokenize()
-	p.expression = p.equality()
+	return p.equality(), append(p.scanErrors, p.parseErrors...)
 }
 
 func (p *parser) equality() exprInterface {
@@ -97,7 +97,7 @@ func (p *parser) previous() token {
 }
 
 func (p *parser) isAtEnd() bool {
-	return p.current >= len(p.tokens)
+	return p.peek().tokenType == EOF
 }
 
 func (p *parser) match(types ...string) bool {

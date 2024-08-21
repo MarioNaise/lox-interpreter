@@ -1,7 +1,6 @@
 package lox
 
-type Visitor interface {
-	visitExpr(expr *expression) string
+type expressionVisitor interface {
 	visitEquality(expr *expressionEquality) string
 	visitComparison(expr *expressionComparison) string
 	visitTerm(expr *expressionTerm) string
@@ -9,4 +8,5 @@ type Visitor interface {
 	visitUnary(expr *expressionUnary) string
 	visitLiteral(expr *expressionLiteral) string
 	visitGroup(expr *expressionGroup) string
+	visitExpr(expr *expression) string
 }
