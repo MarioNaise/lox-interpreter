@@ -19,9 +19,7 @@ func (i *interpreter) visitPrintStmt(s *stmtPrint) string {
 }
 
 func (i *interpreter) visitExprStmt(s *stmtExpr) string {
-	// return ""
-	// leave this for codecrafters tests
-	return s.expression.accept(i)
+	return ""
 }
 
 func (i *interpreter) visitEquality(e *expressionEquality) string {

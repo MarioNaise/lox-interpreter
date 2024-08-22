@@ -19,8 +19,6 @@ func (a *astPrinter) visitPrintStmt(s *stmtPrint) string {
 }
 
 func (a *astPrinter) visitExprStmt(s *stmtExpr) string {
-	// return ""
-	// leave this for codecrafters tests
 	return s.expression.accept(a)
 }
 

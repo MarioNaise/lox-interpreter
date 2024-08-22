@@ -29,14 +29,14 @@ func Parse(r io.Reader) bool {
 	return len(parseErrors) == 0
 }
 
-func Evaluate(r io.Reader) bool {
+func Evaluate(r io.Reader) (bool, bool) {
 	p := newParser(r)
 	stmts, parseErrors := p.parse()
 	if len(parseErrors) == 0 {
-		return evaluateStatements(stmts)
+		return true, evaluateStatements(stmts)
 	}
 	printErrors(parseErrors)
-	return len(parseErrors) == 0
+	return false, false
 }
 
 func evaluateStatements(stmts []stmtInterface) bool {

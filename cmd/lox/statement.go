@@ -17,8 +17,8 @@ func (e *stmtExpr) accept(v stmtVisitor) string {
 }
 
 type stmtPrint struct {
-	expression exprInterface
 	stmtInterface
+	expression exprInterface
 }
 
 func (e *stmtPrint) accept(v stmtVisitor) string {

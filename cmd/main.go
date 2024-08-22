@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"io"
+	"lox/cmd/lox"
 	"os"
 	"strings"
-
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/lox"
 )
 
 func main() {
@@ -50,10 +49,14 @@ func handleParseCommand() {
 
 func handleEvaluateCommand() {
 	r := getFileReader(os.Args[2])
-	ok := lox.Evaluate(r)
-	if !ok {
+	okParse, okEval := lox.Evaluate(r)
+	if !okParse {
+		os.Exit(65)
+	}
+	if !okEval {
 		os.Exit(70)
 	}
+
 	os.Exit(0)
 }
 
