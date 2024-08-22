@@ -2,25 +2,23 @@ package lox
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 )
 
-type interpreter struct {
-	runtimeErrors []loxError
-}
+type interpreter struct{}
 
 func (i *interpreter) evaluate(e exprInterface) string {
 	return e.accept(i)
 }
 
-func (i *interpreter) visitPrintStmt(s *stmtPrint) string {
-	return i.evaluate(s.expr())
+func (i *interpreter) visitPrintStmt(s *stmtPrint) {
+	val := i.evaluate(s.expr())
+	fmt.Println(val)
 }
 
-func (i *interpreter) visitExprStmt(s *stmtExpr) string {
-	return ""
-}
+func (i *interpreter) visitExprStmt(s *stmtExpr) {}
 
 func (i *interpreter) visitEquality(e *expressionEquality) string {
 	leftIsString := i.evaluatesToString(e.expr())
@@ -133,9 +131,10 @@ func (i *interpreter) isTruthy(e exprInterface) bool {
 
 func (i *interpreter) getFloat(e exprInterface) float64 {
 	valDouble, err := strconv.ParseFloat(e.accept(i), 64)
-	if err != nil {
+	if err != nil || e.tokenType() != NUMBER {
 		error := newError("Operand must be a number.", e.token().line)
-		i.runtimeErrors = append(i.runtimeErrors, error)
+		fmt.Fprintf(os.Stderr, "%s\n", error)
+		os.Exit(70)
 	}
 	return valDouble
 }

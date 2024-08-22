@@ -29,28 +29,22 @@ func Parse(r io.Reader) bool {
 	return len(parseErrors) == 0
 }
 
-func Evaluate(r io.Reader) (bool, bool) {
+func Evaluate(r io.Reader) bool {
 	p := newParser(r)
 	stmts, parseErrors := p.parse()
 	if len(parseErrors) == 0 {
-		return true, evaluateStatements(stmts)
+		evaluateStatements(stmts)
+		return true
 	}
 	printErrors(parseErrors)
-	return false, false
+	return false
 }
 
-func evaluateStatements(stmts []stmtInterface) bool {
+func evaluateStatements(stmts []stmtInterface) {
 	i := interpreter{}
 	for _, s := range stmts {
-		result := s.accept(&i)
-		if len(i.runtimeErrors) == 0 {
-			fmt.Println(result)
-		} else {
-			printErrors(i.runtimeErrors)
-			return false
-		}
+		s.accept(&i)
 	}
-	return len(i.runtimeErrors) == 0
 }
 
 func printErrors(errors []loxError) {

@@ -49,12 +49,9 @@ func handleParseCommand() {
 
 func handleEvaluateCommand() {
 	r := getFileReader(os.Args[2])
-	okParse, okEval := lox.Evaluate(r)
-	if !okParse {
+	ok := lox.Evaluate(r)
+	if !ok {
 		os.Exit(65)
-	}
-	if !okEval {
-		os.Exit(70)
 	}
 
 	os.Exit(0)
