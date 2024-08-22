@@ -10,12 +10,12 @@ type interpreter struct {
 	runtimeErrors []loxError
 }
 
-func (i *interpreter) evaluate(stmt stmtInterface) (string, []loxError) {
-	return stmt.accept(i), i.runtimeErrors
+func (i *interpreter) evaluate(e exprInterface) string {
+	return e.accept(i)
 }
 
 func (i *interpreter) visitPrintStmt(s *stmtPrint) string {
-	return s.expression.accept(i)
+	return i.evaluate(s.expr())
 }
 
 func (i *interpreter) visitExprStmt(s *stmtExpr) string {

@@ -22,7 +22,7 @@ func Parse(r io.Reader) bool {
 	if len(parseErrors) == 0 {
 		printer := astPrinter{}
 		for _, s := range stmts {
-			printer.print(s)
+			printer.print(s.expr())
 		}
 	}
 	printErrors(parseErrors)
@@ -41,12 +41,12 @@ func Evaluate(r io.Reader) (bool, bool) {
 
 func evaluateStatements(stmts []stmtInterface) bool {
 	i := interpreter{}
-	for _, stmt := range stmts {
-		result, errors := i.evaluate(stmt)
-		if len(errors) == 0 {
+	for _, s := range stmts {
+		result := s.accept(&i)
+		if len(i.runtimeErrors) == 0 {
 			fmt.Println(result)
 		} else {
-			printErrors(errors)
+			printErrors(i.runtimeErrors)
 			return false
 		}
 	}

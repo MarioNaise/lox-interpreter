@@ -5,22 +5,26 @@ type stmt struct {
 }
 
 type stmtInterface interface {
-	accept(v stmtVisitor) string
+	expr() exprInterface
+	accept(v stmtVisitor)
 }
 
 type stmtExpr struct {
 	expression exprInterface
 }
 
-func (e *stmtExpr) accept(v stmtVisitor) string {
-	return v.visitExprStmt(e)
+func (s *stmtExpr) expr() exprInterface {
+	return s.expression
+}
+
+func (s *stmtExpr) accept(v stmtVisitor) {
+	v.visitExprStmt(s)
 }
 
 type stmtPrint struct {
 	stmtInterface
-	expression exprInterface
 }
 
-func (e *stmtPrint) accept(v stmtVisitor) string {
-	return v.visitPrintStmt(e)
+func (s *stmtPrint) accept(v stmtVisitor) {
+	v.visitPrintStmt(s)
 }

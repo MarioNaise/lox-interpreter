@@ -26,13 +26,13 @@ func (p *parser) statement() stmtInterface {
 	}
 	expr := p.equality()
 	p.consume(SEMICOLON, "Expected ';' after expression.")
-	return &stmtExpr{expression: expr}
+	return &stmtExpr{expr}
 }
 
 func (p *parser) printStmt() stmtInterface {
 	value := p.equality()
 	p.consume(SEMICOLON, "Expected ';' after value.")
-	return &stmtPrint{expression: value}
+	return &stmtPrint{&stmtExpr{value}}
 }
 
 func (p *parser) equality() exprInterface {

@@ -7,19 +7,19 @@ import (
 
 type astPrinter struct{}
 
-func (a *astPrinter) print(stmt stmtInterface) {
-	if stmt == nil {
+func (a *astPrinter) print(e exprInterface) {
+	if e == nil {
 		return
 	}
-	fmt.Println(stmt.accept(a))
+	fmt.Println(e.accept(a))
 }
 
-func (a *astPrinter) visitPrintStmt(s *stmtPrint) string {
-	return s.expression.accept(a)
+func (a *astPrinter) visitPrintStmt(s *stmtPrint) {
+	a.print(s.expr())
 }
 
-func (a *astPrinter) visitExprStmt(s *stmtExpr) string {
-	return s.expression.accept(a)
+func (a *astPrinter) visitExprStmt(s *stmtExpr) {
+	a.print(s.expr())
 }
 
 func (a *astPrinter) visitEquality(e *expressionEquality) string {
