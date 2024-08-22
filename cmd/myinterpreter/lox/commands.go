@@ -18,10 +18,12 @@ func Tokenize(r io.Reader) bool {
 
 func Parse(r io.Reader) bool {
 	p := newParser(r)
-	expr, parseErrors := p.parse()
+	stmts, parseErrors := p.parse()
 	if len(parseErrors) == 0 {
 		printer := astPrinter{}
-		printer.print(expr)
+		for _, s := range stmts {
+			printer.print(s)
+		}
 	}
 	printErrors(parseErrors)
 	return len(parseErrors) == 0
@@ -29,10 +31,18 @@ func Parse(r io.Reader) bool {
 
 func Evaluate(r io.Reader) bool {
 	p := newParser(r)
-	expr, parseErrors := p.parse()
+	stmts, parseErrors := p.parse()
 	if len(parseErrors) == 0 {
-		i := interpreter{}
-		result, errors := i.evaluate(expr)
+		return evaluateStatements(stmts)
+	}
+	printErrors(parseErrors)
+	return len(parseErrors) == 0
+}
+
+func evaluateStatements(stmts []stmtInterface) bool {
+	i := interpreter{}
+	for _, stmt := range stmts {
+		result, errors := i.evaluate(stmt)
 		if len(errors) == 0 {
 			fmt.Println(result)
 		} else {
@@ -40,8 +50,7 @@ func Evaluate(r io.Reader) bool {
 			return false
 		}
 	}
-	printErrors(parseErrors)
-	return len(parseErrors) == 0
+	return len(i.runtimeErrors) == 0
 }
 
 func printErrors(errors []loxError) {

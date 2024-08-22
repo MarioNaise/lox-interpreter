@@ -7,11 +7,21 @@ import (
 
 type astPrinter struct{}
 
-func (a *astPrinter) print(expr exprInterface) {
-	if expr == nil {
+func (a *astPrinter) print(stmt stmtInterface) {
+	if stmt == nil {
 		return
 	}
-	fmt.Println(expr.accept(a))
+	fmt.Println(stmt.accept(a))
+}
+
+func (a *astPrinter) visitPrintStmt(s *stmtPrint) string {
+	return s.expression.accept(a)
+}
+
+func (a *astPrinter) visitExprStmt(s *stmtExpr) string {
+	// return ""
+	// leave this for codecrafters tests
+	return s.expression.accept(a)
 }
 
 func (a *astPrinter) visitEquality(e *expressionEquality) string {

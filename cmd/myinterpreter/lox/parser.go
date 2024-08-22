@@ -6,14 +6,33 @@ import (
 
 type parser struct {
 	*scanner
+	program     []stmtInterface
 	parseErrors []loxError
 	current     int
 }
 
-func (p *parser) parse() (exprInterface, []loxError) {
+func (p *parser) parse() ([]stmtInterface, []loxError) {
 	p.parseErrors = []loxError{}
 	p.tokenize()
-	return p.equality(), append(p.scanErrors, p.parseErrors...)
+	for !p.isAtEnd() {
+		p.program = append(p.program, p.statement())
+	}
+	return p.program, p.parseErrors
+}
+
+func (p *parser) statement() stmtInterface {
+	if p.match(PRINT) {
+		return p.printStmt()
+	}
+	expr := p.equality()
+	p.consume(SEMICOLON, "Expected ';' after expression.")
+	return &stmtExpr{expression: expr}
+}
+
+func (p *parser) printStmt() stmtInterface {
+	value := p.equality()
+	p.consume(SEMICOLON, "Expected ';' after value.")
+	return &stmtPrint{expression: value}
 }
 
 func (p *parser) equality() exprInterface {
