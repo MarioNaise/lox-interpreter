@@ -13,6 +13,16 @@ func (i *interpreter) evaluate(e exprInterface) string {
 	return e.accept(i)
 }
 
+func (i *interpreter) execute(s stmtInterface) {
+	s.accept(i)
+}
+
+func (i *interpreter) interpret(stmts []stmtInterface) {
+	for _, s := range stmts {
+		s.accept(i)
+	}
+}
+
 func (i *interpreter) visitPrintStmt(s *stmtPrint) {
 	val := i.evaluate(s.expr())
 	fmt.Println(val)

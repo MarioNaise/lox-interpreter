@@ -33,18 +33,12 @@ func Evaluate(r io.Reader) bool {
 	p := newParser(r)
 	stmts, parseErrors := p.parse()
 	if len(parseErrors) == 0 {
-		evaluateStatements(stmts)
+		i := interpreter{}
+		i.interpret(stmts)
 		return true
 	}
 	printErrors(parseErrors)
 	return false
-}
-
-func evaluateStatements(stmts []stmtInterface) {
-	i := interpreter{}
-	for _, s := range stmts {
-		s.accept(&i)
-	}
 }
 
 func printErrors(errors []loxError) {
