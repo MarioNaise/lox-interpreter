@@ -1,7 +1,8 @@
 package lox
 
 type exprInterface interface {
-	accept(v expressionVisitor) string
+	accept(v expressionVisitor) any
+	value() any
 	expr() exprInterface
 	next() exprInterface
 	token() token
@@ -13,11 +14,12 @@ type exprInterface interface {
 type expression struct {
 	expression exprInterface
 	right      exprInterface
+	val        any
 	operator   token
 }
 
-func (e *expression) token() token {
-	return e.operator
+func (e *expression) value() any {
+	return e.val
 }
 
 func (e *expression) expr() exprInterface {
@@ -26,6 +28,10 @@ func (e *expression) expr() exprInterface {
 
 func (e *expression) next() exprInterface {
 	return e.right
+}
+
+func (e *expression) token() token {
+	return e.operator
 }
 
 func (e *expression) tokenType() string {
@@ -40,7 +46,7 @@ func (e *expression) literal() string {
 	return e.operator.literal
 }
 
-func (e *expression) accept(v expressionVisitor) string {
+func (e *expression) accept(v expressionVisitor) any {
 	return v.visitExpr(e)
 }
 
@@ -48,7 +54,7 @@ type expressionLiteral struct {
 	exprInterface
 }
 
-func (e *expressionLiteral) accept(v expressionVisitor) string {
+func (e *expressionLiteral) accept(v expressionVisitor) any {
 	return v.visitLiteral(e)
 }
 
@@ -56,7 +62,7 @@ type expressionGroup struct {
 	exprInterface
 }
 
-func (e *expressionGroup) accept(v expressionVisitor) string {
+func (e *expressionGroup) accept(v expressionVisitor) any {
 	return v.visitGroup(e)
 }
 
@@ -64,7 +70,7 @@ type expressionEquality struct {
 	exprInterface
 }
 
-func (e *expressionEquality) accept(v expressionVisitor) string {
+func (e *expressionEquality) accept(v expressionVisitor) any {
 	return v.visitEquality(e)
 }
 
@@ -72,7 +78,7 @@ type expressionComparison struct {
 	exprInterface
 }
 
-func (e *expressionComparison) accept(v expressionVisitor) string {
+func (e *expressionComparison) accept(v expressionVisitor) any {
 	return v.visitComparison(e)
 }
 
@@ -80,7 +86,7 @@ type expressionTerm struct {
 	exprInterface
 }
 
-func (e *expressionTerm) accept(v expressionVisitor) string {
+func (e *expressionTerm) accept(v expressionVisitor) any {
 	return v.visitTerm(e)
 }
 
@@ -88,7 +94,7 @@ type expressionFactor struct {
 	exprInterface
 }
 
-func (e *expressionFactor) accept(v expressionVisitor) string {
+func (e *expressionFactor) accept(v expressionVisitor) any {
 	return v.visitFactor(e)
 }
 
@@ -96,6 +102,6 @@ type expressionUnary struct {
 	exprInterface
 }
 
-func (e *expressionUnary) accept(v expressionVisitor) string {
+func (e *expressionUnary) accept(v expressionVisitor) any {
 	return v.visitUnary(e)
 }

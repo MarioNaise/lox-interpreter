@@ -1,12 +1,12 @@
 package lox
 
 type expressionVisitor interface {
-	visitEquality(expr *expressionEquality) string
-	visitComparison(expr *expressionComparison) string
-	visitTerm(expr *expressionTerm) string
-	visitFactor(expr *expressionFactor) string
-	visitUnary(expr *expressionUnary) string
-	visitLiteral(expr *expressionLiteral) string
-	visitGroup(expr *expressionGroup) string
-	visitExpr(expr *expression) string
+	visitEquality(expr *expressionEquality) any
+	visitComparison(expr *expressionComparison) any
+	visitTerm(expr *expressionTerm) any
+	visitFactor(expr *expressionFactor) any
+	visitUnary(expr *expressionUnary) any
+	visitLiteral(expr *expressionLiteral) any
+	visitGroup(expr *expressionGroup) any
+	visitExpr(expr *expression) any
 }
