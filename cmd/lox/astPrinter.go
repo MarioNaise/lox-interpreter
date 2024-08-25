@@ -64,7 +64,7 @@ func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
 }
 
 func (a *astPrinter) visitGroup(e *expressionGroup) any {
-	return a.parenthesized("group", e.expr())
+	return a.parenthesized("group", e.exprInterface)
 }
 
 func (a *astPrinter) visitExpr(e *expression) any { return "" }
