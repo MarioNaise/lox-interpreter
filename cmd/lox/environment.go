@@ -2,7 +2,6 @@ package lox
 
 import (
 	"fmt"
-	"os"
 )
 
 type environment struct {
@@ -21,8 +20,7 @@ func (e *environment) assign(t token, value any) {
 	_, ok := e.values[t.lexeme]
 	if !ok {
 		err := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(70)
+		panic(err)
 	}
 	e.values[t.lexeme] = value
 }
@@ -31,8 +29,7 @@ func (e *environment) get(t token) any {
 	value, ok := e.values[t.lexeme]
 	if !ok {
 		err := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(70)
+		panic(err)
 	}
 	return value
 }

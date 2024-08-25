@@ -29,6 +29,7 @@ func Parse(r io.Reader) bool {
 
 func Evaluate(r io.Reader) bool {
 	i := newInterpreter(r)
+	defer handleRuntimeError()
 	stmts, parseErrors := i.parse()
 	if len(parseErrors) == 0 {
 		i.interpret(stmts)
@@ -36,6 +37,13 @@ func Evaluate(r io.Reader) bool {
 	}
 	printErrors(parseErrors)
 	return false
+}
+
+func handleRuntimeError() {
+	if r := recover(); r != nil {
+		fmt.Fprintln(os.Stderr, r)
+		os.Exit(70)
+	}
 }
 
 func printErrors(errors []loxError) {

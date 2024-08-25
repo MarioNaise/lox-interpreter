@@ -3,7 +3,6 @@ package lox
 import (
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 )
 
@@ -157,9 +156,8 @@ func (i *interpreter) evaluatesToString(e exprInterface) bool {
 func (i *interpreter) parseFloat(e exprInterface) float64 {
 	n := i.evaluate(e)
 	if reflect.TypeOf(n).Name() != "float64" {
-		error := newError(fmt.Sprintf("Operand must be a number: %v", e.lexeme()), e.token().line)
-		fmt.Fprintln(os.Stderr, error)
-		os.Exit(70)
+		err := newError(fmt.Sprintf("Operand must be a number: %v", e.lexeme()), e.token().line)
+		panic(err)
 	}
 	return n.(float64)
 }
