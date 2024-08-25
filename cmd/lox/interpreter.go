@@ -37,7 +37,7 @@ func (i *interpreter) visitVarStmt(s *stmtVar) {
 	var name string
 	if s.expr() != nil {
 		val = i.evaluate(s.expr())
-		name = s.getName().lexeme
+		name = s.name().lexeme
 	}
 	i.define(name, val)
 }
@@ -116,7 +116,7 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 	case BANG:
 		return !i.isTruthy(e.next())
 	case MINUS:
-		val := e.next().value().(float64)
+		val := i.parseFloat(e.next())
 		return -val
 	default:
 		return false
@@ -127,14 +127,8 @@ func (i *interpreter) visitVar(e *expressionVar) any {
 	return i.get(e.token())
 }
 
-func (i *interpreter) visitAssign(e *expressionAssignment) any {
-	_, ok := i.values[e.expr().lexeme()]
-	if !ok {
-		err := newError(fmt.Sprintf("Undefined variable %s.", e.expr().lexeme()), i.line)
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(70)
-	}
-	i.define(e.expr().lexeme(), e.value())
+func (i *interpreter) visitAssignment(e *expressionAssignment) any {
+	i.assign(e.expr().token(), e.value())
 	return i.get(e.expr().token())
 }
 

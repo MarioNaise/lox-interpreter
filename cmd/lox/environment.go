@@ -17,6 +17,16 @@ func (e *environment) define(name string, value any) {
 	e.values[name] = value
 }
 
+func (e *environment) assign(t token, value any) {
+	_, ok := e.values[t.lexeme]
+	if !ok {
+		err := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(70)
+	}
+	e.values[t.lexeme] = value
+}
+
 func (e *environment) get(t token) any {
 	value, ok := e.values[t.lexeme]
 	if !ok {

@@ -7,7 +7,7 @@ type expressionVisitor interface {
 	visitFactor(expr *expressionFactor) any
 	visitUnary(expr *expressionUnary) any
 	visitVar(expr *expressionVar) any
-	visitAssign(expr *expressionAssignment) any
+	visitAssignment(expr *expressionAssignment) any
 	visitLiteral(expr *expressionLiteral) any
 	visitGroup(expr *expressionGroup) any
 	visitExpr(expr *expression) any

@@ -6,7 +6,7 @@ type stmt struct {
 
 type stmtInterface interface {
 	expr() exprInterface
-	getName() token
+	name() token
 	accept(v stmtVisitor)
 }
 
@@ -19,7 +19,7 @@ func (s *stmtExpr) expr() exprInterface {
 	return s.initializer
 }
 
-func (s *stmtExpr) getName() token {
+func (s *stmtExpr) name() token {
 	return s.token
 }
 

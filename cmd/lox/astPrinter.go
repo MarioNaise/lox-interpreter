@@ -22,7 +22,7 @@ func (a *astPrinter) printExpr(e exprInterface) {
 
 func (a *astPrinter) visitVarStmt(s *stmtVar) {
 	a.prefix(VAR)
-	a.prefix(s.getName().lexeme)
+	a.prefix(s.name().lexeme)
 	a.printExpr(s.expr())
 }
 
@@ -59,7 +59,7 @@ func (a *astPrinter) visitVar(e *expressionVar) any {
 	return fmt.Sprintf("VAR:%s", e.lexeme())
 }
 
-func (a *astPrinter) visitAssign(e *expressionAssignment) any {
+func (a *astPrinter) visitAssignment(e *expressionAssignment) any {
 	return fmt.Sprintf("VAR:%s %v", e.expr().lexeme(), e.value())
 }
 

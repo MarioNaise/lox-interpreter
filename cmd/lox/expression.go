@@ -55,7 +55,7 @@ type expressionAssignment struct {
 }
 
 func (e *expressionAssignment) accept(v expressionVisitor) any {
-	return v.visitAssign(e)
+	return v.visitAssignment(e)
 }
 
 type expressionEquality struct {
