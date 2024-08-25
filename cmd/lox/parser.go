@@ -124,7 +124,7 @@ func (p *parser) unary() exprInterface {
 	if p.match(BANG) {
 		operator := p.previous()
 		right := p.unary()
-		val := p.isTruthy(right)
+		val := right.value()
 		return &expressionUnary{&expression{nil, right, val, operator}}
 	}
 	if p.match(MINUS) {
@@ -226,10 +226,10 @@ func (p *parser) getFloatFromToken(str string) float64 {
 
 func (p *parser) getFloatFromValue(e exprInterface) float64 {
 	if reflect.TypeOf(e.value()).Name() != "float64" {
-		if p.isTruthyByType(e) {
+		if p.isTruthy(e) {
 			return 1
 		}
-		if !p.isTruthyByType(e) {
+		if !p.isTruthy(e) {
 			return 0
 		}
 	}
@@ -237,28 +237,6 @@ func (p *parser) getFloatFromValue(e exprInterface) float64 {
 }
 
 func (p *parser) isTruthy(e exprInterface) bool {
-	value := e.value()
-	if value == nil {
-		return false
-	}
-	switch e.tokenType() {
-	case BANG:
-		return !p.isTruthyByType(e)
-	case STRING:
-		return value != ""
-	case NUMBER:
-		return value.(float64) != 0
-	case TRUE:
-		return true
-	case FALSE:
-		return false
-	case NIL:
-		return false
-	}
-	return p.isTruthyByType(e)
-}
-
-func (p *parser) isTruthyByType(e exprInterface) bool {
 	value := e.value()
 	switch reflect.TypeOf(value).Name() {
 	case "string":

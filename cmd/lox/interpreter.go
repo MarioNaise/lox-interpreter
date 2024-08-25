@@ -2,17 +2,20 @@ package lox
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 )
 
 type interpreter struct {
+	*parser
 	*environment
 }
 
-func newInterpreter() *interpreter {
+func newInterpreter(r io.Reader) *interpreter {
 	env := newEnvironment()
-	return &interpreter{env}
+	p := newParser(r)
+	return &interpreter{p, env}
 }
 
 func (i *interpreter) evaluate(e exprInterface) any {
@@ -109,7 +112,7 @@ func (i *interpreter) visitFactor(e *expressionFactor) any {
 func (i *interpreter) visitUnary(e *expressionUnary) any {
 	switch e.tokenType() {
 	case BANG:
-		return !e.value().(bool)
+		return !i.isTruthy(e.next())
 	case MINUS:
 		val := e.next().value().(float64)
 		return -val
@@ -156,4 +159,29 @@ func (i *interpreter) parseFloat(e exprInterface) float64 {
 
 func (i *interpreter) hasSameType(a any, b any) bool {
 	return reflect.TypeOf(a).Name() == reflect.TypeOf(b).Name()
+}
+
+func (i *interpreter) isTruthy(e exprInterface) bool {
+	value := e.value()
+	if value == nil {
+		return false
+	}
+	switch e.tokenType() {
+	case IDENTIFIER:
+		expr := &expression{val: i.get(e.token())}
+		return i.parser.isTruthy(expr)
+	case BANG:
+		return e.accept(i).(bool)
+	case STRING:
+		return value != ""
+	case NUMBER:
+		return value.(float64) != 0
+	case TRUE:
+		return true
+	case FALSE:
+		return false
+	case NIL:
+		return false
+	}
+	return false
 }

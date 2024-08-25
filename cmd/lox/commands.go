@@ -28,10 +28,9 @@ func Parse(r io.Reader) bool {
 }
 
 func Evaluate(r io.Reader) bool {
-	p := newParser(r)
-	stmts, parseErrors := p.parse()
+	i := newInterpreter(r)
+	stmts, parseErrors := i.parse()
 	if len(parseErrors) == 0 {
-		i := newInterpreter()
 		i.interpret(stmts)
 		return true
 	}
