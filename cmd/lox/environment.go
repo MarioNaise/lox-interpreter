@@ -20,8 +20,8 @@ func (e *environment) define(name string, value any) {
 func (e *environment) get(t token) any {
 	value, ok := e.values[t.lexeme]
 	if !ok {
-		error := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
-		fmt.Fprintln(os.Stderr, error)
+		err := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(70)
 	}
 	return value

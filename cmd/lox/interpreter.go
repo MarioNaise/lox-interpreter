@@ -47,7 +47,9 @@ func (i *interpreter) visitPrintStmt(s *stmtPrint) {
 	fmt.Printf("%v\n", val)
 }
 
-func (i *interpreter) visitExprStmt(s *stmtExpr) {}
+func (i *interpreter) visitExprStmt(s *stmtExpr) {
+	i.evaluate(s.expr())
+}
 
 func (i *interpreter) visitEquality(e *expressionEquality) any {
 	left := e.expr().accept(i)
@@ -123,6 +125,17 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 
 func (i *interpreter) visitVar(e *expressionVar) any {
 	return i.get(e.token())
+}
+
+func (i *interpreter) visitAssign(e *expressionAssignment) any {
+	_, ok := i.values[e.expr().lexeme()]
+	if !ok {
+		err := newError(fmt.Sprintf("Undefined variable %s.", e.expr().lexeme()), i.line)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(70)
+	}
+	i.define(e.expr().lexeme(), e.value())
+	return i.get(e.expr().token())
 }
 
 func (i *interpreter) visitLiteral(e *expressionLiteral) any {

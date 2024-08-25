@@ -50,6 +50,14 @@ func (e *expression) accept(v expressionVisitor) any {
 	return v.visitExpr(e)
 }
 
+type expressionAssignment struct {
+	exprInterface
+}
+
+func (e *expressionAssignment) accept(v expressionVisitor) any {
+	return v.visitAssign(e)
+}
+
 type expressionEquality struct {
 	exprInterface
 }

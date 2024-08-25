@@ -27,36 +27,57 @@ func (p *parser) parse() ([]stmtInterface, []loxError) {
 	return p.program, p.parseErrors
 }
 
+func (p *parser) expression() exprInterface {
+	return p.assignment()
+}
+
 func (p *parser) declaration() stmtInterface {
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
-	return p.statement()
+	return p.exprStmt()
 }
 
 func (p *parser) varDeclaration() stmtInterface {
 	name := p.consume(IDENTIFIER, "Expected variable name.")
 	var initializer exprInterface
 	if p.match(EQUAL) {
-		initializer = p.equality()
+		initializer = p.expression()
 	}
 	p.consume(SEMICOLON, "Expected ';' after variable declaration.")
 	return &stmtVar{&stmtExpr{initializer, name}}
 }
 
-func (p *parser) statement() stmtInterface {
+func (p *parser) printStmt() stmtInterface {
+	value := p.expression()
+	p.consume(SEMICOLON, "Expected ';' after value.")
+	return &stmtPrint{&stmtExpr{initializer: value}}
+}
+
+func (p *parser) exprStmt() stmtInterface {
 	if p.match(PRINT) {
 		return p.printStmt()
 	}
-	expr := p.equality()
+	expr := p.expression()
 	p.consume(SEMICOLON, "Expected ';' after expression.")
 	return &stmtExpr{initializer: expr}
 }
 
-func (p *parser) printStmt() stmtInterface {
-	value := p.equality()
-	p.consume(SEMICOLON, "Expected ';' after value.")
-	return &stmtPrint{&stmtExpr{initializer: value}}
+func (p *parser) assignment() exprInterface {
+	expr := p.equality()
+	if p.match(EQUAL) {
+		operator := p.previous()
+		value := p.assignment()
+
+		if reflect.TypeOf(expr) == reflect.TypeOf(&expressionVar{}) {
+			exp := &expression{expr, value, value.value(), operator}
+			return &expressionAssignment{exp}
+		}
+
+		err := newError("Invalid assignment target.", p.peek().line)
+		p.parseErrors = append(p.parseErrors, err)
+	}
+	return expr
 }
 
 func (p *parser) equality() exprInterface {
