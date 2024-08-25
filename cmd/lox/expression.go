@@ -50,22 +50,6 @@ func (e *expression) accept(v expressionVisitor) any {
 	return v.visitExpr(e)
 }
 
-type expressionLiteral struct {
-	exprInterface
-}
-
-func (e *expressionLiteral) accept(v expressionVisitor) any {
-	return v.visitLiteral(e)
-}
-
-type expressionGroup struct {
-	exprInterface
-}
-
-func (e *expressionGroup) accept(v expressionVisitor) any {
-	return v.visitGroup(e)
-}
-
 type expressionEquality struct {
 	exprInterface
 }
@@ -104,4 +88,28 @@ type expressionUnary struct {
 
 func (e *expressionUnary) accept(v expressionVisitor) any {
 	return v.visitUnary(e)
+}
+
+type expressionLiteral struct {
+	exprInterface
+}
+
+func (e *expressionLiteral) accept(v expressionVisitor) any {
+	return v.visitLiteral(e)
+}
+
+type expressionGroup struct {
+	exprInterface
+}
+
+func (e *expressionGroup) accept(v expressionVisitor) any {
+	return v.visitGroup(e)
+}
+
+type expressionVar struct {
+	exprInterface
+}
+
+func (e *expressionVar) accept(v expressionVisitor) any {
+	return v.visitVar(e)
 }

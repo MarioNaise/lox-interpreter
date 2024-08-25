@@ -1,6 +1,7 @@
 package lox
 
 type stmtVisitor interface {
-	visitPrintStmt(expr *stmtPrint)
-	visitExprStmt(expr *stmtExpr)
+	visitVarStmt(stmt *stmtVar)
+	visitPrintStmt(stmt *stmtPrint)
+	visitExprStmt(stmt *stmtExpr)
 }

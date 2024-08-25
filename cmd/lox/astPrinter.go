@@ -7,19 +7,36 @@ import (
 
 type astPrinter struct{}
 
-func (a *astPrinter) print(e exprInterface) {
+func (a *astPrinter) print(stmts []stmtInterface) {
+	for _, s := range stmts {
+		s.accept(a)
+	}
+}
+
+func (a *astPrinter) printExpr(e exprInterface) {
 	if e == nil {
 		return
 	}
 	fmt.Println(e.accept(a))
 }
 
+func (a *astPrinter) visitVarStmt(s *stmtVar) {
+	a.prefix(VAR)
+	a.prefix(s.getName().lexeme)
+	a.printExpr(s.expr())
+}
+
 func (a *astPrinter) visitPrintStmt(s *stmtPrint) {
-	a.print(s.expr())
+	a.prefix(PRINT)
+	a.printExpr(s.expr())
 }
 
 func (a *astPrinter) visitExprStmt(s *stmtExpr) {
-	a.print(s.expr())
+	a.printExpr(s.expr())
+}
+
+func (a *astPrinter) visitVar(e *expressionVar) any {
+	return fmt.Sprintf("VAR:%s", e.lexeme())
 }
 
 func (a *astPrinter) visitEquality(e *expressionEquality) any {
@@ -73,4 +90,8 @@ func (a *astPrinter) parenthesized(name string, e ...exprInterface) string {
 
 func (a *astPrinter) defaultString(e exprInterface) string {
 	return a.parenthesized(e.lexeme(), e.expr(), e.next())
+}
+
+func (a *astPrinter) prefix(s string) {
+	fmt.Print(s, " ")
 }

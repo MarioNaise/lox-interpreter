@@ -20,10 +20,8 @@ func Parse(r io.Reader) bool {
 	p := newParser(r)
 	stmts, parseErrors := p.parse()
 	if len(parseErrors) == 0 {
-		printer := astPrinter{}
-		for _, s := range stmts {
-			printer.print(s.expr())
-		}
+		p := astPrinter{}
+		p.print(stmts)
 	}
 	printErrors(parseErrors)
 	return len(parseErrors) == 0
@@ -33,7 +31,7 @@ func Evaluate(r io.Reader) bool {
 	p := newParser(r)
 	stmts, parseErrors := p.parse()
 	if len(parseErrors) == 0 {
-		i := interpreter{}
+		i := newInterpreter()
 		i.interpret(stmts)
 		return true
 	}

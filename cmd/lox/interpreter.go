@@ -4,10 +4,16 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"strconv"
 )
 
-type interpreter struct{}
+type interpreter struct {
+	*environment
+}
+
+func newInterpreter() *interpreter {
+	env := newEnvironment()
+	return &interpreter{env}
+}
 
 func (i *interpreter) evaluate(e exprInterface) any {
 	return e.accept(i)
@@ -21,6 +27,16 @@ func (i *interpreter) interpret(stmts []stmtInterface) {
 	for _, s := range stmts {
 		s.accept(i)
 	}
+}
+
+func (i *interpreter) visitVarStmt(s *stmtVar) {
+	var val any
+	var name string
+	if s.expr() != nil {
+		val = i.evaluate(s.expr())
+		name = s.getName().lexeme
+	}
+	i.define(name, val)
 }
 
 func (i *interpreter) visitPrintStmt(s *stmtPrint) {
@@ -102,6 +118,10 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 	}
 }
 
+func (i *interpreter) visitVar(e *expressionVar) any {
+	return i.get(e.token())
+}
+
 func (i *interpreter) visitLiteral(e *expressionLiteral) any {
 	return e.value()
 }
@@ -127,13 +147,13 @@ func (i *interpreter) evaluatesToString(e exprInterface) bool {
 }
 
 func (i *interpreter) parseFloat(e exprInterface) float64 {
-	asFloat, err := strconv.ParseFloat(fmt.Sprintf("%v", e.value()), 64)
-	if err != nil || reflect.TypeOf(e.value()).Name() != "float64" {
+	n := i.evaluate(e)
+	if reflect.TypeOf(n).Name() != "float64" {
 		error := newError(fmt.Sprintf("Operand must be a number: %v", e.lexeme()), e.token().line)
 		fmt.Fprintln(os.Stderr, error)
 		os.Exit(70)
 	}
-	return asFloat
+	return n.(float64)
 }
 
 func (i *interpreter) hasSameType(a any, b any) bool {

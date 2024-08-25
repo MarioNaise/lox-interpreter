@@ -22,9 +22,26 @@ func (p *parser) parse() ([]stmtInterface, []loxError) {
 	p.parseErrors = []loxError{}
 	p.tokenize()
 	for !p.isAtEnd() {
-		p.program = append(p.program, p.statement())
+		p.program = append(p.program, p.declaration())
 	}
 	return p.program, p.parseErrors
+}
+
+func (p *parser) declaration() stmtInterface {
+	if p.match(VAR) {
+		return p.varDeclaration()
+	}
+	return p.statement()
+}
+
+func (p *parser) varDeclaration() stmtInterface {
+	name := p.consume(IDENTIFIER, "Expected variable name.")
+	var initializer exprInterface
+	if p.match(EQUAL) {
+		initializer = p.equality()
+	}
+	p.consume(SEMICOLON, "Expected ';' after variable declaration.")
+	return &stmtVar{&stmtExpr{initializer, name}}
 }
 
 func (p *parser) statement() stmtInterface {
@@ -33,13 +50,13 @@ func (p *parser) statement() stmtInterface {
 	}
 	expr := p.equality()
 	p.consume(SEMICOLON, "Expected ';' after expression.")
-	return &stmtExpr{expr}
+	return &stmtExpr{initializer: expr}
 }
 
 func (p *parser) printStmt() stmtInterface {
 	value := p.equality()
 	p.consume(SEMICOLON, "Expected ';' after value.")
-	return &stmtPrint{&stmtExpr{value}}
+	return &stmtPrint{&stmtExpr{initializer: value}}
 }
 
 func (p *parser) equality() exprInterface {
@@ -137,6 +154,9 @@ func (p *parser) primary() exprInterface {
 	if p.match(STRING) {
 		val := p.previous().literal
 		return &expressionLiteral{&expression{nil, nil, val, p.previous()}}
+	}
+	if p.match(IDENTIFIER) {
+		return &expressionVar{&expression{nil, nil, p.previous().lexeme, p.previous()}}
 	}
 	if p.match(LEFT_PAREN) {
 		expr := &expressionGroup{p.equality()}

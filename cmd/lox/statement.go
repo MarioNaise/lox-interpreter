@@ -6,15 +6,21 @@ type stmt struct {
 
 type stmtInterface interface {
 	expr() exprInterface
+	getName() token
 	accept(v stmtVisitor)
 }
 
 type stmtExpr struct {
-	expression exprInterface
+	initializer exprInterface
+	token
 }
 
 func (s *stmtExpr) expr() exprInterface {
-	return s.expression
+	return s.initializer
+}
+
+func (s *stmtExpr) getName() token {
+	return s.token
 }
 
 func (s *stmtExpr) accept(v stmtVisitor) {
@@ -27,4 +33,12 @@ type stmtPrint struct {
 
 func (s *stmtPrint) accept(v stmtVisitor) {
 	v.visitPrintStmt(s)
+}
+
+type stmtVar struct {
+	stmtInterface
+}
+
+func (s *stmtVar) accept(v stmtVisitor) {
+	v.visitVarStmt(s)
 }
