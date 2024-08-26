@@ -9,6 +9,10 @@ import (
 )
 
 func main() {
+	if len(os.Args) == 1 {
+		lox.Repl()
+		return
+	}
 	if len(os.Args) < 3 {
 		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh <command> <filename>")
 		os.Exit(1)

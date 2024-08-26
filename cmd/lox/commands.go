@@ -1,10 +1,62 @@
 package lox
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"strings"
 )
+
+const (
+	PROMPT = "> "
+	EXIT   = ".exit"
+)
+
+func Repl() {
+	s := bufio.NewScanner(os.Stdin)
+	i := newInterpreter(nil)
+	fmt.Print(PROMPT)
+	for s.Scan() {
+		if s.Text() == EXIT {
+			return
+		}
+		r := strings.NewReader(s.Text())
+		i.parser = newParser(r)
+		stmts, parseErrors := i.parse()
+		if len(parseErrors) == 0 {
+			for _, stmt := range stmts {
+				handleStmt(stmt, i)
+			}
+		}
+		for _, err := range append(i.scanErrors, i.parseErrors...) {
+			fmt.Fprintln(os.Stderr, replError(err.String()))
+		}
+		fmt.Print(PROMPT)
+	}
+}
+
+func handleStmt(stmt stmtInterface, i *interpreter) {
+	defer continueOnError()
+	i.handleStmt(stmt)
+}
+
+func continueOnError() {
+	if r := recover(); r != nil {
+		switch r := r.(type) {
+		case loxError:
+			fmt.Fprintln(os.Stderr, replError(r.String()))
+		default:
+			fmt.Fprintln(os.Stderr, r)
+		}
+	}
+}
+
+func replError(err string) string {
+	reg := regexp.MustCompile(`\[line \d+\]\s`)
+	return reg.ReplaceAllString(err, "")
+}
 
 func Tokenize(r io.Reader) bool {
 	s := newScanner(r)
@@ -29,7 +81,7 @@ func Parse(r io.Reader) bool {
 
 func Evaluate(r io.Reader) bool {
 	i := newInterpreter(r)
-	defer handleRuntimeError()
+	defer exitOnError()
 	stmts, parseErrors := i.parse()
 	if len(parseErrors) == 0 {
 		i.interpret(stmts)
@@ -39,7 +91,7 @@ func Evaluate(r io.Reader) bool {
 	return false
 }
 
-func handleRuntimeError() {
+func exitOnError() {
 	if r := recover(); r != nil {
 		fmt.Fprintln(os.Stderr, r)
 		os.Exit(70)
@@ -47,7 +99,7 @@ func handleRuntimeError() {
 }
 
 func printErrors(errors []loxError) {
-	for _, error := range errors {
-		fmt.Fprintln(os.Stderr, error)
+	for _, err := range errors {
+		fmt.Fprintln(os.Stderr, err)
 	}
 }
