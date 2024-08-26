@@ -12,7 +12,7 @@ type interpreter struct {
 }
 
 func newInterpreter(r io.Reader) *interpreter {
-	env := newEnvironment()
+	env := newEnvironment(nil)
 	p := newParser(r)
 	return &interpreter{p, env}
 }
@@ -56,6 +56,15 @@ func (i *interpreter) visitPrintStmt(s *stmtPrint) {
 	fmt.Printf("%v\n", val)
 }
 
+func (i *interpreter) visitBlockStmt(s *stmtBlock) {
+	prevEnv := i.environment
+	i.environment = newEnvironment(prevEnv)
+	for _, s := range s.statements {
+		i.handleStmt(s)
+	}
+	i.environment = prevEnv
+}
+
 func (i *interpreter) visitExprStmt(s *stmtExpr) {
 	i.evaluate(s.expr())
 }
@@ -72,7 +81,7 @@ func (i *interpreter) visitEquality(e *expressionEquality) any {
 	case BANG_EQUAL:
 		return left != right
 	}
-	return e.value()
+	return nil
 }
 
 func (i *interpreter) visitComparison(e *expressionComparison) any {
@@ -88,7 +97,7 @@ func (i *interpreter) visitComparison(e *expressionComparison) any {
 	case GREATER_EQUAL:
 		return left >= right
 	}
-	return e.value()
+	return nil
 }
 
 func (i *interpreter) visitTerm(e *expressionTerm) any {
@@ -157,19 +166,25 @@ func (i *interpreter) evaluatesToString(e exprInterface) bool {
 	if e.expr() == nil || e.next() == nil {
 		return e.tokenType() == STRING
 	}
-	left := reflect.TypeOf(e.expr().accept(i)).Name()
-	right := reflect.TypeOf(e.next().accept(i)).Name()
-	return left == "string" ||
-		right == "string"
+	switch e.expr().accept(i).(type) {
+	case string:
+		return true
+	}
+	switch e.next().accept(i).(type) {
+	case string:
+		return true
+	}
+	return false
 }
 
 func (i *interpreter) parseFloat(e exprInterface) float64 {
 	n := i.evaluate(e)
-	if reflect.TypeOf(n).Name() != "float64" {
-		err := newError(fmt.Sprintf("Operand must be a number: %v", e.lexeme()), e.token().line)
-		panic(err)
+	switch n := n.(type) {
+	case float64:
+		return n
 	}
-	return n.(float64)
+	err := newError(fmt.Sprintf("Operand must be a number: %v", e.lexeme()), e.token().line)
+	panic(err)
 }
 
 func (i *interpreter) hasSameType(a any, b any) bool {
@@ -177,26 +192,17 @@ func (i *interpreter) hasSameType(a any, b any) bool {
 }
 
 func (i *interpreter) isTruthy(e exprInterface) bool {
-	value := e.value()
-	if value == nil {
-		return false
-	}
-	switch e.tokenType() {
-	case IDENTIFIER:
-		expr := &expression{val: i.get(e.token())}
-		return i.parser.isTruthy(expr)
-	case BANG:
-		return e.accept(i).(bool)
-	case STRING:
+	value := i.evaluate(e)
+	switch value := value.(type) {
+	case string:
 		return value != ""
-	case NUMBER:
-		return value.(float64) != 0
-	case TRUE:
-		return true
-	case FALSE:
+	case float64:
+		return value != 0
+	case bool:
+		return value
+	case nil:
 		return false
-	case NIL:
+	default:
 		return false
 	}
-	return false
 }

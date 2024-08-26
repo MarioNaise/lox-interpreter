@@ -5,6 +5,13 @@ import (
 	"strings"
 )
 
+const (
+	BLOCK     = "BLOCK"
+	BLOCK_END = "BLOCK_END"
+	GROUP     = "GROUP"
+	INDENT    = "  "
+)
+
 type astPrinter struct{}
 
 func (a *astPrinter) print(stmts []stmtInterface) {
@@ -29,6 +36,14 @@ func (a *astPrinter) visitVarStmt(s *stmtVar) {
 func (a *astPrinter) visitPrintStmt(s *stmtPrint) {
 	a.prefix(PRINT)
 	a.printExpr(s.expr())
+}
+
+func (a *astPrinter) visitBlockStmt(s *stmtBlock) {
+	fmt.Println(BLOCK)
+	for _, stmt := range s.statements {
+		stmt.accept(a)
+	}
+	fmt.Println(BLOCK_END)
 }
 
 func (a *astPrinter) visitExprStmt(s *stmtExpr) {
@@ -56,11 +71,11 @@ func (a *astPrinter) visitUnary(e *expressionUnary) any {
 }
 
 func (a *astPrinter) visitVar(e *expressionVar) any {
-	return fmt.Sprintf("VAR:%s", e.lexeme())
+	return fmt.Sprintf("%s:%s", VAR, e.lexeme())
 }
 
 func (a *astPrinter) visitAssignment(e *expressionAssignment) any {
-	return fmt.Sprintf("VAR:%s %v", e.expr().lexeme(), e.value())
+	return fmt.Sprintf("%s:%s %v", VAR, e.expr().lexeme(), e.next().accept(a))
 }
 
 func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
@@ -68,7 +83,7 @@ func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
 }
 
 func (a *astPrinter) visitGroup(e *expressionGroup) any {
-	return a.parenthesized("group", e.exprInterface)
+	return a.parenthesized(GROUP, e.exprInterface)
 }
 
 func (a *astPrinter) visitExpr(e *expression) any { return "" }

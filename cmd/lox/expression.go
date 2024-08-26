@@ -2,7 +2,6 @@ package lox
 
 type exprInterface interface {
 	accept(v expressionVisitor) any
-	value() any
 	expr() exprInterface
 	next() exprInterface
 	token() token
@@ -14,12 +13,7 @@ type exprInterface interface {
 type expression struct {
 	expression exprInterface
 	right      exprInterface
-	val        any
 	operator   token
-}
-
-func (e *expression) value() any {
-	return e.val
 }
 
 func (e *expression) expr() exprInterface {
@@ -100,10 +94,15 @@ func (e *expressionUnary) accept(v expressionVisitor) any {
 
 type expressionLiteral struct {
 	exprInterface
+	val any
 }
 
 func (e *expressionLiteral) accept(v expressionVisitor) any {
 	return v.visitLiteral(e)
+}
+
+func (e *expressionLiteral) value() any {
+	return e.val
 }
 
 type expressionGroup struct {

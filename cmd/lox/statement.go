@@ -42,3 +42,12 @@ type stmtVar struct {
 func (s *stmtVar) accept(v stmtVisitor) {
 	v.visitVarStmt(s)
 }
+
+type stmtBlock struct {
+	stmtInterface
+	statements []stmtInterface
+}
+
+func (s *stmtBlock) accept(v stmtVisitor) {
+	v.visitBlockStmt(s)
+}

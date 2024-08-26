@@ -3,7 +3,6 @@ package lox
 import (
 	"fmt"
 	"io"
-	"reflect"
 	"strconv"
 )
 
@@ -35,7 +34,19 @@ func (p *parser) declaration() stmtInterface {
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
-	return p.exprStmt()
+	return p.statement()
+}
+
+func (p *parser) statement() stmtInterface {
+	if p.match(PRINT) {
+		return p.printStmt()
+	}
+	if p.match(LEFT_BRACE) {
+		return p.blockStmt()
+	}
+	expr := p.expression()
+	p.consume(SEMICOLON, "Expected ';' after expression.")
+	return &stmtExpr{initializer: expr}
 }
 
 func (p *parser) varDeclaration() stmtInterface {
@@ -54,13 +65,13 @@ func (p *parser) printStmt() stmtInterface {
 	return &stmtPrint{&stmtExpr{initializer: value}}
 }
 
-func (p *parser) exprStmt() stmtInterface {
-	if p.match(PRINT) {
-		return p.printStmt()
+func (p *parser) blockStmt() stmtInterface {
+	stmts := []stmtInterface{}
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		stmts = append(stmts, p.declaration())
 	}
-	expr := p.expression()
-	p.consume(SEMICOLON, "Expected ';' after expression.")
-	return &stmtExpr{initializer: expr}
+	p.consume(RIGHT_BRACE, "Expected '}' after block.")
+	return &stmtBlock{statements: stmts}
 }
 
 func (p *parser) assignment() exprInterface {
@@ -68,12 +79,11 @@ func (p *parser) assignment() exprInterface {
 	if p.match(EQUAL) {
 		operator := p.previous()
 		value := p.assignment()
-
-		if reflect.TypeOf(expr) == reflect.TypeOf(&expressionVar{}) {
-			exp := &expression{expr, value, value.value(), operator}
+		switch expr := expr.(type) {
+		case *expressionVar:
+			exp := &expression{expr, value, operator}
 			return &expressionAssignment{exp}
 		}
-
 		err := newError("Invalid assignment target.", p.peek().line)
 		p.parseErrors = append(p.parseErrors, err)
 	}
@@ -85,7 +95,7 @@ func (p *parser) equality() exprInterface {
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
 		right := p.comparison()
-		return &expressionEquality{&expression{expr, right, false, operator}}
+		return &expressionEquality{&expression{expr, right, operator}}
 	}
 	return expr
 }
@@ -95,7 +105,7 @@ func (p *parser) comparison() exprInterface {
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		operator := p.previous()
 		right := p.term()
-		expr = &expressionComparison{&expression{expr, right, false, operator}}
+		expr = &expressionComparison{&expression{expr, right, operator}}
 	}
 	return expr
 }
@@ -105,20 +115,12 @@ func (p *parser) term() exprInterface {
 	for p.match(PLUS) {
 		operator := p.previous()
 		right := p.factor()
-		var val any
-		if reflect.TypeOf(expr.value()).Name() == "string" ||
-			reflect.TypeOf(right.value()).Name() == "string" {
-			val = fmt.Sprintf("%v%v", expr.value(), right.value())
-		} else {
-			val = p.getFloatFromValue(expr) + p.getFloatFromValue(right)
-		}
-		expr = &expressionTerm{&expression{expr, right, val, operator}}
+		expr = &expressionTerm{&expression{expr, right, operator}}
 	}
 	for p.match(MINUS) {
 		operator := p.previous()
 		right := p.factor()
-		val := p.getFloatFromValue(expr) - p.getFloatFromValue(right)
-		expr = &expressionTerm{&expression{expr, right, val, operator}}
+		expr = &expressionTerm{&expression{expr, right, operator}}
 	}
 
 	return expr
@@ -129,14 +131,12 @@ func (p *parser) factor() exprInterface {
 	for p.match(STAR) {
 		operator := p.previous()
 		right := p.unary()
-		val := p.getFloatFromValue(expr) * p.getFloatFromValue(right)
-		expr = &expressionFactor{&expression{expr, right, val, operator}}
+		expr = &expressionFactor{&expression{expr, right, operator}}
 	}
 	for p.match(SLASH) {
 		operator := p.previous()
 		right := p.unary()
-		val := p.getFloatFromValue(expr) / p.getFloatFromValue(right)
-		expr = &expressionFactor{&expression{expr, right, val, operator}}
+		expr = &expressionFactor{&expression{expr, right, operator}}
 	}
 	return expr
 }
@@ -145,14 +145,12 @@ func (p *parser) unary() exprInterface {
 	if p.match(BANG) {
 		operator := p.previous()
 		right := p.unary()
-		val := right.value()
-		return &expressionUnary{&expression{nil, right, val, operator}}
+		return &expressionUnary{&expression{nil, right, operator}}
 	}
 	if p.match(MINUS) {
 		operator := p.previous()
 		right := p.unary()
-		val := -p.getFloatFromValue(right)
-		return &expressionUnary{&expression{nil, right, val, operator}}
+		return &expressionUnary{&expression{nil, right, operator}}
 	}
 
 	return p.primary()
@@ -160,24 +158,24 @@ func (p *parser) unary() exprInterface {
 
 func (p *parser) primary() exprInterface {
 	if p.match(FALSE) {
-		return &expressionLiteral{&expression{nil, nil, false, p.previous()}}
+		return &expressionLiteral{&expression{nil, nil, p.previous()}, false}
 	}
 	if p.match(TRUE) {
-		return &expressionLiteral{&expression{nil, nil, true, p.previous()}}
+		return &expressionLiteral{&expression{nil, nil, p.previous()}, true}
 	}
 	if p.match(NIL) {
-		return &expressionLiteral{&expression{nil, nil, nil, p.previous()}}
+		return &expressionLiteral{&expression{nil, nil, p.previous()}, nil}
 	}
 	if p.match(NUMBER) {
 		val := p.getFloatFromToken(p.previous().literal)
-		return &expressionLiteral{&expression{nil, nil, val, p.previous()}}
+		return &expressionLiteral{&expression{nil, nil, p.previous()}, val}
 	}
 	if p.match(STRING) {
 		val := p.previous().literal
-		return &expressionLiteral{&expression{nil, nil, val, p.previous()}}
+		return &expressionLiteral{&expression{nil, nil, p.previous()}, val}
 	}
 	if p.match(IDENTIFIER) {
-		return &expressionVar{&expression{nil, nil, p.previous().lexeme, p.previous()}}
+		return &expressionVar{&expression{nil, nil, p.previous()}}
 	}
 	if p.match(LEFT_PAREN) {
 		expr := &expressionGroup{p.equality()}
@@ -264,29 +262,4 @@ func (p *parser) getFloatFromToken(str string) float64 {
 		panic(fmt.Sprintf("[line %d] Couldn't parse float64 -*%s*-", p.line, str))
 	}
 	return valDouble
-}
-
-func (p *parser) getFloatFromValue(e exprInterface) float64 {
-	if reflect.TypeOf(e.value()).Name() != "float64" {
-		if p.isTruthy(e) {
-			return 1
-		}
-		if !p.isTruthy(e) {
-			return 0
-		}
-	}
-	return e.value().(float64)
-}
-
-func (p *parser) isTruthy(e exprInterface) bool {
-	value := e.value()
-	switch reflect.TypeOf(value).Name() {
-	case "string":
-		return value != ""
-	case "float64":
-		return value.(float64) != 0
-	case "bool":
-		return value.(bool)
-	}
-	return false
 }

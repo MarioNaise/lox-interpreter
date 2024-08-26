@@ -5,11 +5,12 @@ import (
 )
 
 type environment struct {
-	values map[string]any
+	enclosing *environment
+	values    map[string]any
 }
 
-func newEnvironment() *environment {
-	return &environment{values: make(map[string]any)}
+func newEnvironment(env *environment) *environment {
+	return &environment{env, make(map[string]any)}
 }
 
 func (e *environment) define(name string, value any) {
@@ -18,18 +19,26 @@ func (e *environment) define(name string, value any) {
 
 func (e *environment) assign(t token, value any) {
 	_, ok := e.values[t.lexeme]
-	if !ok {
-		err := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
-		panic(err)
+	if ok {
+		e.values[t.lexeme] = value
+		return
 	}
-	e.values[t.lexeme] = value
+	if e.enclosing != nil {
+		e.enclosing.assign(t, value)
+		return
+	}
+	err := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
+	panic(err)
 }
 
 func (e *environment) get(t token) any {
 	value, ok := e.values[t.lexeme]
-	if !ok {
-		err := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
-		panic(err)
+	if ok {
+		return value
 	}
-	return value
+	if e.enclosing != nil {
+		return e.enclosing.get(t)
+	}
+	err := newError(fmt.Sprintf("Undefined variable %s.", t.lexeme), t.line)
+	panic(err)
 }
