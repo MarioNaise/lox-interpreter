@@ -27,8 +27,18 @@ func (i *interpreter) execute(s stmtInterface) {
 
 func (i *interpreter) interpret(stmts []stmtInterface) {
 	for _, s := range stmts {
-		s.accept(i)
+		i.handleStmt(s)
 	}
+}
+
+func (i *interpreter) handleStmt(s stmtInterface) {
+	defer func() {
+		if r := recover(); r != nil {
+			i.synchronize()
+			panic(r)
+		}
+	}()
+	s.accept(i)
 }
 
 func (i *interpreter) visitVarStmt(s *stmtVar) {

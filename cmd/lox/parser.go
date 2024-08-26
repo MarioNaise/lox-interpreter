@@ -237,6 +237,27 @@ func (p *parser) consume(t string, err string) token {
 	return token{}
 }
 
+func (p *parser) synchronize() {
+	p.advance()
+	for !p.isAtEnd() {
+		if p.previous().tokenType == SEMICOLON {
+			return
+		}
+		switch p.peek().tokenType {
+		case CLASS:
+		case FUN:
+		case VAR:
+		case FOR:
+		case IF:
+		case WHILE:
+		case PRINT:
+		case RETURN:
+			return
+		}
+		p.advance()
+	}
+}
+
 func (p *parser) getFloatFromToken(str string) float64 {
 	valDouble, err := strconv.ParseFloat(str, 64)
 	if err != nil {
