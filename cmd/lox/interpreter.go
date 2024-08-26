@@ -158,7 +158,7 @@ func (i *interpreter) evaluatesToString(e exprInterface) bool {
 		return e.tokenType() == STRING
 	}
 	left := reflect.TypeOf(e.expr().accept(i)).Name()
-	right := reflect.TypeOf(e.expr().accept(i)).Name()
+	right := reflect.TypeOf(e.next().accept(i)).Name()
 	return left == "string" ||
 		right == "string"
 }
