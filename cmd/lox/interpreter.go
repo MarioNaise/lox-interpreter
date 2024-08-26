@@ -137,7 +137,7 @@ func (i *interpreter) visitVar(e *expressionVar) any {
 }
 
 func (i *interpreter) visitAssignment(e *expressionAssignment) any {
-	i.assign(e.expr().token(), e.value())
+	i.assign(e.expr().token(), i.evaluate(e.next()))
 	return i.get(e.expr().token())
 }
 
