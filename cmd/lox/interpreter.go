@@ -43,10 +43,9 @@ func (i *interpreter) handleStmt(s stmtInterface) {
 
 func (i *interpreter) visitVarStmt(s *stmtVar) {
 	var val any
-	var name string
+	name := s.name().lexeme
 	if s.expr() != nil {
 		val = i.evaluate(s.expr())
-		name = s.name().lexeme
 	}
 	i.define(name, val)
 }
