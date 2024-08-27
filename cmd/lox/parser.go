@@ -231,7 +231,7 @@ func (p *parser) consume(t string, err string) token {
 		p.advance()
 		return p.previous()
 	}
-	p.parseErrors = append(p.parseErrors, newError(err, p.peek().line))
+	p.parseErrors = append(p.parseErrors, newError(err, p.previous().line))
 	return token{}
 }
 

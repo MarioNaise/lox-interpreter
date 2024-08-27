@@ -32,7 +32,6 @@ func (s *scanner) tokenize() ([]token, []loxError) {
 		s.current = 0
 		s.line++
 		s.scanLine()
-
 	}
 	if err := s.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
