@@ -27,7 +27,12 @@ func Repl() {
 		stmts, parseErrors := i.parse()
 		if len(parseErrors) == 0 {
 			for _, stmt := range stmts {
-				handleStmt(stmt, i)
+				switch stmt := stmt.(type) {
+				case *stmtExpr:
+					fmt.Println(i.evaluate(stmt.expr()))
+				default:
+					handleStmt(stmt, i)
+				}
 			}
 		}
 		for _, err := range append(i.scanErrors, i.parseErrors...) {
