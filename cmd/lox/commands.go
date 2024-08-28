@@ -85,6 +85,18 @@ func Parse(r io.Reader) bool {
 }
 
 func Evaluate(r io.Reader) bool {
+	defer exitOnError()
+	i := newInterpreter(r)
+	i.tokenize()
+	expr := i.expression()
+	if len(i.parseErrors) == 0 {
+		fmt.Println(i.evaluate(expr))
+	}
+	printErrors(i.parseErrors)
+	return len(i.parseErrors) == 0
+}
+
+func Run(r io.Reader) bool {
 	i := newInterpreter(r)
 	defer exitOnError()
 	stmts, parseErrors := i.parse()

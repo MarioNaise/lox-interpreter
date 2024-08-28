@@ -27,6 +27,9 @@ func main() {
 		handleParseCommand()
 	case "evaluate":
 		handleEvaluateCommand()
+	case "run":
+		handleRunCommand()
+
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
@@ -39,7 +42,6 @@ func handleTokenizeCommand() {
 	if !ok {
 		os.Exit(65)
 	}
-	os.Exit(0)
 }
 
 func handleParseCommand() {
@@ -48,7 +50,6 @@ func handleParseCommand() {
 	if !ok {
 		os.Exit(65)
 	}
-	os.Exit(0)
 }
 
 func handleEvaluateCommand() {
@@ -57,8 +58,14 @@ func handleEvaluateCommand() {
 	if !ok {
 		os.Exit(65)
 	}
+}
 
-	os.Exit(0)
+func handleRunCommand() {
+	r := getFileReader(os.Args[2])
+	ok := lox.Run(r)
+	if !ok {
+		os.Exit(65)
+	}
 }
 
 func getFileReader(filename string) io.Reader {
