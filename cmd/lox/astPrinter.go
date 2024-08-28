@@ -60,6 +60,14 @@ func (a *astPrinter) visitExprStmt(s *stmtExpr) {
 	a.printExpr(s.expr())
 }
 
+func (a *astPrinter) visitVar(e *expressionVar) any {
+	return fmt.Sprintf("%s:%s", VAR, e.lexeme())
+}
+
+func (a *astPrinter) visitAssignment(e *expressionAssignment) any {
+	return fmt.Sprintf("%s:%s %v", VAR, e.expr().lexeme(), e.next().accept(a))
+}
+
 func (a *astPrinter) visitEquality(e *expressionEquality) any {
 	return a.defaultString(e)
 }
@@ -78,14 +86,6 @@ func (a *astPrinter) visitFactor(e *expressionFactor) any {
 
 func (a *astPrinter) visitUnary(e *expressionUnary) any {
 	return a.parenthesized(e.lexeme(), e.next())
-}
-
-func (a *astPrinter) visitVar(e *expressionVar) any {
-	return fmt.Sprintf("%s:%s", VAR, e.lexeme())
-}
-
-func (a *astPrinter) visitAssignment(e *expressionAssignment) any {
-	return fmt.Sprintf("%s:%s %v", VAR, e.expr().lexeme(), e.next().accept(a))
 }
 
 func (a *astPrinter) visitLiteral(e *expressionLiteral) any {

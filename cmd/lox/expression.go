@@ -10,10 +10,90 @@ type exprInterface interface {
 	literal() string
 }
 
+type expressionVar struct {
+	exprInterface
+}
+
+type expressionAssignment struct {
+	exprInterface
+}
+
+type expressionEquality struct {
+	exprInterface
+}
+
+type expressionComparison struct {
+	exprInterface
+}
+
+type expressionTerm struct {
+	exprInterface
+}
+
+type expressionFactor struct {
+	exprInterface
+}
+
+type expressionUnary struct {
+	exprInterface
+}
+
+type expressionLiteral struct {
+	exprInterface
+	val any
+}
+
+type expressionGroup struct {
+	exprInterface
+}
 type expression struct {
 	expression exprInterface
 	right      exprInterface
 	operator   token
+}
+
+func (e *expressionVar) accept(v expressionVisitor) any {
+	return v.visitVar(e)
+}
+
+func (e *expressionAssignment) accept(v expressionVisitor) any {
+	return v.visitAssignment(e)
+}
+
+func (e *expressionEquality) accept(v expressionVisitor) any {
+	return v.visitEquality(e)
+}
+
+func (e *expressionComparison) accept(v expressionVisitor) any {
+	return v.visitComparison(e)
+}
+
+func (e *expressionTerm) accept(v expressionVisitor) any {
+	return v.visitTerm(e)
+}
+
+func (e *expressionFactor) accept(v expressionVisitor) any {
+	return v.visitFactor(e)
+}
+
+func (e *expressionUnary) accept(v expressionVisitor) any {
+	return v.visitUnary(e)
+}
+
+func (e *expressionLiteral) accept(v expressionVisitor) any {
+	return v.visitLiteral(e)
+}
+
+func (e *expressionGroup) accept(v expressionVisitor) any {
+	return v.visitGroup(e)
+}
+
+func (e *expression) accept(v expressionVisitor) any {
+	return v.visitExpr(e)
+}
+
+func (e *expressionLiteral) value() any {
+	return e.val
 }
 
 func (e *expression) expr() exprInterface {
@@ -38,85 +118,4 @@ func (e *expression) lexeme() string {
 
 func (e *expression) literal() string {
 	return e.operator.literal
-}
-
-func (e *expression) accept(v expressionVisitor) any {
-	return v.visitExpr(e)
-}
-
-type expressionAssignment struct {
-	exprInterface
-}
-
-func (e *expressionAssignment) accept(v expressionVisitor) any {
-	return v.visitAssignment(e)
-}
-
-type expressionEquality struct {
-	exprInterface
-}
-
-func (e *expressionEquality) accept(v expressionVisitor) any {
-	return v.visitEquality(e)
-}
-
-type expressionComparison struct {
-	exprInterface
-}
-
-func (e *expressionComparison) accept(v expressionVisitor) any {
-	return v.visitComparison(e)
-}
-
-type expressionTerm struct {
-	exprInterface
-}
-
-func (e *expressionTerm) accept(v expressionVisitor) any {
-	return v.visitTerm(e)
-}
-
-type expressionFactor struct {
-	exprInterface
-}
-
-func (e *expressionFactor) accept(v expressionVisitor) any {
-	return v.visitFactor(e)
-}
-
-type expressionUnary struct {
-	exprInterface
-}
-
-func (e *expressionUnary) accept(v expressionVisitor) any {
-	return v.visitUnary(e)
-}
-
-type expressionLiteral struct {
-	exprInterface
-	val any
-}
-
-func (e *expressionLiteral) accept(v expressionVisitor) any {
-	return v.visitLiteral(e)
-}
-
-func (e *expressionLiteral) value() any {
-	return e.val
-}
-
-type expressionGroup struct {
-	exprInterface
-}
-
-func (e *expressionGroup) accept(v expressionVisitor) any {
-	return v.visitGroup(e)
-}
-
-type expressionVar struct {
-	exprInterface
-}
-
-func (e *expressionVar) accept(v expressionVisitor) any {
-	return v.visitVar(e)
 }

@@ -1,38 +1,13 @@
 package lox
 
-type stmt struct {
-	exprInterface
-}
-
 type stmtInterface interface {
 	expr() exprInterface
 	name() token
 	accept(v stmtVisitor)
 }
 
-type stmtExpr struct {
-	initializer exprInterface
-	token
-}
-
-func (s *stmtExpr) expr() exprInterface {
-	return s.initializer
-}
-
-func (s *stmtExpr) name() token {
-	return s.token
-}
-
-func (s *stmtExpr) accept(v stmtVisitor) {
-	v.visitExprStmt(s)
-}
-
-type stmtPrint struct {
+type stmtVar struct {
 	stmtInterface
-}
-
-func (s *stmtPrint) accept(v stmtVisitor) {
-	v.visitPrintStmt(s)
 }
 
 type stmtIf struct {
@@ -42,16 +17,8 @@ type stmtIf struct {
 	elseBranch stmtInterface
 }
 
-func (s *stmtIf) accept(v stmtVisitor) {
-	v.visitIfStmt(s)
-}
-
-type stmtVar struct {
+type stmtPrint struct {
 	stmtInterface
-}
-
-func (s *stmtVar) accept(v stmtVisitor) {
-	v.visitVarStmt(s)
 }
 
 type stmtBlock struct {
@@ -59,6 +26,35 @@ type stmtBlock struct {
 	statements []stmtInterface
 }
 
+type stmtExpr struct {
+	initializer exprInterface
+	token
+}
+
+func (s *stmtVar) accept(v stmtVisitor) {
+	v.visitVarStmt(s)
+}
+
+func (s *stmtIf) accept(v stmtVisitor) {
+	v.visitIfStmt(s)
+}
+
+func (s *stmtPrint) accept(v stmtVisitor) {
+	v.visitPrintStmt(s)
+}
+
 func (s *stmtBlock) accept(v stmtVisitor) {
 	v.visitBlockStmt(s)
+}
+
+func (s *stmtExpr) accept(v stmtVisitor) {
+	v.visitExprStmt(s)
+}
+
+func (s *stmtExpr) expr() exprInterface {
+	return s.initializer
+}
+
+func (s *stmtExpr) name() token {
+	return s.token
 }

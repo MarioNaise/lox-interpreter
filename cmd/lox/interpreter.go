@@ -70,6 +70,15 @@ func (i *interpreter) visitExprStmt(s *stmtExpr) {
 	i.evaluate(s.expr())
 }
 
+func (i *interpreter) visitVar(e *expressionVar) any {
+	return i.get(e.token())
+}
+
+func (i *interpreter) visitAssignment(e *expressionAssignment) any {
+	i.assign(e.expr().token(), i.evaluate(e.next()))
+	return i.get(e.expr().token())
+}
+
 func (i *interpreter) visitEquality(e *expressionEquality) any {
 	left := i.evaluate(e.expr())
 	right := i.evaluate(e.next())
@@ -140,15 +149,6 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 	default:
 		return false
 	}
-}
-
-func (i *interpreter) visitVar(e *expressionVar) any {
-	return i.get(e.token())
-}
-
-func (i *interpreter) visitAssignment(e *expressionAssignment) any {
-	i.assign(e.expr().token(), i.evaluate(e.next()))
-	return i.get(e.expr().token())
 }
 
 func (i *interpreter) visitLiteral(e *expressionLiteral) any {
