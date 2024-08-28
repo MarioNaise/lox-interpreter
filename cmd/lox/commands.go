@@ -35,7 +35,7 @@ func Repl() {
 				}
 			}
 		}
-		for _, err := range append(i.scanErrors, i.parseErrors...) {
+		for _, err := range parseErrors {
 			fmt.Fprintln(os.Stderr, replError(err.String()))
 		}
 		fmt.Print(PROMPT)

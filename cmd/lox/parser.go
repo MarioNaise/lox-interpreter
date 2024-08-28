@@ -18,12 +18,11 @@ func newParser(r io.Reader) *parser {
 }
 
 func (p *parser) parse() ([]stmtInterface, []loxError) {
-	p.parseErrors = []loxError{}
 	p.tokenize()
 	for !p.isAtEnd() {
 		p.program = append(p.program, p.declaration())
 	}
-	return p.program, p.parseErrors
+	return p.program, append(p.scanErrors, p.parseErrors...)
 }
 
 func (p *parser) expression() exprInterface {
