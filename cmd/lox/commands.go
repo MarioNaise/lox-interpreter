@@ -75,13 +75,13 @@ func Tokenize(r io.Reader) bool {
 
 func Parse(r io.Reader) bool {
 	p := newParser(r)
-	stmts, parseErrors := p.parse()
-	if len(parseErrors) == 0 {
+	stmts, errs := p.parse()
+	if len(errs) == 0 {
 		p := astPrinter{}
 		p.print(stmts)
 	}
-	printErrors(parseErrors)
-	return len(parseErrors) == 0
+	printErrors(errs)
+	return len(errs) == 0
 }
 
 func Evaluate(r io.Reader) bool {
@@ -89,23 +89,27 @@ func Evaluate(r io.Reader) bool {
 	i := newInterpreter(r)
 	i.tokenize()
 	expr := i.expression()
-	if len(i.parseErrors) == 0 {
+	if expr == nil {
+		return true
+	}
+	errs := append(i.scanErrors, i.parseErrors...)
+	if len(errs) == 0 {
 		stmt := &stmtPrint{&stmtExpr{initializer: expr}}
 		i.visitPrintStmt(stmt)
 	}
-	printErrors(i.parseErrors)
-	return len(i.parseErrors) == 0
+	printErrors(errs)
+	return len(errs) == 0
 }
 
 func Run(r io.Reader) bool {
 	i := newInterpreter(r)
 	defer exitOnError()
-	stmts, parseErrors := i.parse()
-	if len(parseErrors) == 0 {
+	stmts, errs := i.parse()
+	if len(errs) == 0 {
 		i.interpret(stmts)
 		return true
 	}
-	printErrors(parseErrors)
+	printErrors(errs)
 	return false
 }
 
