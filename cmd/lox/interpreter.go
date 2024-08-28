@@ -79,6 +79,17 @@ func (i *interpreter) visitAssignment(e *expressionAssignment) any {
 	return i.get(e.expr().token())
 }
 
+func (i *interpreter) visitLogical(e *expressionLogical) any {
+	if e.tokenType() == OR {
+		if i.isTruthy(e.expr()) {
+			return i.evaluate(e.expr())
+		}
+	} else if !i.isTruthy(e.expr()) {
+		return i.evaluate(e.expr())
+	}
+	return i.evaluate(e.next())
+}
+
 func (i *interpreter) visitEquality(e *expressionEquality) any {
 	left := i.evaluate(e.expr())
 	right := i.evaluate(e.next())

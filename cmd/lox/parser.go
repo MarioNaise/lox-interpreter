@@ -90,7 +90,7 @@ func (p *parser) blockStmt() stmtInterface {
 }
 
 func (p *parser) assignment() exprInterface {
-	expr := p.equality()
+	expr := p.or()
 	if p.match(EQUAL) {
 		operator := p.previous()
 		value := p.assignment()
@@ -101,6 +101,26 @@ func (p *parser) assignment() exprInterface {
 		}
 		err := newError("Invalid assignment target.", p.peek().line)
 		p.parseErrors = append(p.parseErrors, err)
+	}
+	return expr
+}
+
+func (p *parser) or() exprInterface {
+	expr := p.and()
+	for p.match(OR) {
+		operator := p.previous()
+		right := p.and()
+		expr = &expressionLogical{&expression{expr, right, operator}}
+	}
+	return expr
+}
+
+func (p *parser) and() exprInterface {
+	expr := p.equality()
+	for p.match(AND) {
+		operator := p.previous()
+		right := p.equality()
+		expr = &expressionLogical{&expression{expr, right, operator}}
 	}
 	return expr
 }

@@ -68,6 +68,10 @@ func (a *astPrinter) visitAssignment(e *expressionAssignment) any {
 	return fmt.Sprintf("%s:%s %v", VAR, e.expr().lexeme(), e.next().accept(a))
 }
 
+func (a *astPrinter) visitLogical(e *expressionLogical) any {
+	return a.parenthesized(strings.ToUpper(e.lexeme()), e.expr(), e.next())
+}
+
 func (a *astPrinter) visitEquality(e *expressionEquality) any {
 	return a.defaultString(e)
 }

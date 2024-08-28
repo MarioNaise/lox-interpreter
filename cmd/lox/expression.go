@@ -18,6 +18,10 @@ type expressionAssignment struct {
 	exprInterface
 }
 
+type expressionLogical struct {
+	exprInterface
+}
+
 type expressionEquality struct {
 	exprInterface
 }
@@ -58,6 +62,10 @@ func (e *expressionVar) accept(v expressionVisitor) any {
 
 func (e *expressionAssignment) accept(v expressionVisitor) any {
 	return v.visitAssignment(e)
+}
+
+func (e *expressionLogical) accept(v expressionVisitor) any {
+	return v.visitLogical(e)
 }
 
 func (e *expressionEquality) accept(v expressionVisitor) any {
