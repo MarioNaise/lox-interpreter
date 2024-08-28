@@ -17,6 +17,7 @@ type regexRule struct {
 type scanner struct {
 	*bufio.Scanner
 	specCharTokenTypes map[string]string
+	tmpBuffer          string
 	tokens             []token
 	scanErrors         []loxError
 	regexRules         []regexRule
@@ -28,11 +29,21 @@ type scanner struct {
 
 func (s *scanner) tokenize() ([]token, []loxError) {
 	s.tokens, s.scanErrors = []token{}, []loxError{}
+	s.current = 0
 	for s.Scan() {
-		s.current = 0
 		s.line++
 		s.scanLine()
 	}
+	if s.tmpBuffer != "" {
+		if s.tmpBuffer[s.current:s.current+1] == `"` {
+			s.scanErrors = append(s.scanErrors, newError("Unterminated string.", s.line))
+			s.current++
+		} else {
+			s.scanErrors = append(s.scanErrors, newError("Unexpected character: "+string(s.tmpBuffer[s.current]), s.line))
+			s.current++
+		}
+	}
+
 	if err := s.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -42,32 +53,30 @@ func (s *scanner) tokenize() ([]token, []loxError) {
 }
 
 func (s *scanner) scanLine() {
+	text := s.tmpBuffer + s.Text()[s.current:]
 outer:
-	for s.current < len(s.Text()) {
+	for s.current < len(text) {
 		valueFound := false
 		for _, rule := range s.regexRules {
 			reg := regexp.MustCompile(rule.regex)
-			loc := reg.FindIndex([]byte(s.Text()[s.current:]))
+			loc := reg.FindIndex([]byte(text[s.current:]))
 			if len(loc) < 2 || loc[0] != 0 {
 				continue
 			}
 			valueFound = true
-			value := string(s.Text()[s.current : s.current+loc[1]])
+			s.tmpBuffer = ""
+			value := string(text[s.current : s.current+loc[1]])
 			rule.handler(value)
 			s.current += len(value)
 			continue outer
 		}
 		if !valueFound {
-			if s.Text()[s.current:s.current+1] == `"` {
-				s.scanErrors = append(s.scanErrors, newError("Unterminated string.", s.line))
-				s.current++
-				break outer
-			} else {
-				s.scanErrors = append(s.scanErrors, newError("Unexpected character: "+string(s.Text()[s.current]), s.line))
-				s.current++
-			}
+			s.tmpBuffer += s.Text()[s.current:] + "\n"
+			s.current++
+			break outer
 		}
 	}
+	s.current = 0
 }
 
 func (s *scanner) defaultHandler(val string) {
