@@ -178,15 +178,8 @@ func (i *interpreter) evaluatesToString(e exprInterface) bool {
 	if e.expr() == nil || e.next() == nil {
 		return e.tokenType() == STRING
 	}
-	switch i.evaluate(e.expr()).(type) {
-	case string:
-		return true
-	}
-	switch i.evaluate(e.next()).(type) {
-	case string:
-		return true
-	}
-	return false
+	return reflect.TypeOf(i.evaluate(e.expr())).Name() == "string" &&
+		reflect.TypeOf(i.evaluate(e.next())).Name() == "string"
 }
 
 func (i *interpreter) parseFloat(e exprInterface) float64 {
