@@ -38,6 +38,9 @@ func (p *parser) declaration() stmtInterface {
 }
 
 func (p *parser) statement() stmtInterface {
+	if p.match(IF) {
+		return p.ifStmt()
+	}
 	if p.match(PRINT) {
 		return p.printStmt()
 	}
@@ -57,6 +60,18 @@ func (p *parser) varDeclaration() stmtInterface {
 	}
 	p.consume(SEMICOLON, "Expected ';' after variable declaration.")
 	return &stmtVar{&stmtExpr{initializer, name}}
+}
+
+func (p *parser) ifStmt() stmtInterface {
+	p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
+	condition := p.expression()
+	p.consume(RIGHT_PAREN, "Expect ')' after if condition.")
+	thenBranch := p.statement()
+	var elseBranch stmtInterface
+	if p.match(ELSE) {
+		elseBranch = p.statement()
+	}
+	return &stmtIf{condition: condition, thenBranch: thenBranch, elseBranch: elseBranch}
 }
 
 func (p *parser) printStmt() stmtInterface {

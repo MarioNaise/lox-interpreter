@@ -33,6 +33,16 @@ func (a *astPrinter) visitVarStmt(s *stmtVar) {
 	a.printExpr(s.expr())
 }
 
+func (a *astPrinter) visitIfStmt(s *stmtIf) {
+	a.prefix(IF)
+	a.printExpr(s.condition)
+	s.thenBranch.accept(a)
+	if s.elseBranch != nil {
+		fmt.Println(ELSE)
+		s.elseBranch.accept(a)
+	}
+}
+
 func (a *astPrinter) visitPrintStmt(s *stmtPrint) {
 	a.prefix(PRINT)
 	a.printExpr(s.expr())

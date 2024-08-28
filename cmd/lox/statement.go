@@ -35,6 +35,17 @@ func (s *stmtPrint) accept(v stmtVisitor) {
 	v.visitPrintStmt(s)
 }
 
+type stmtIf struct {
+	stmtInterface
+	condition  exprInterface
+	thenBranch stmtInterface
+	elseBranch stmtInterface
+}
+
+func (s *stmtIf) accept(v stmtVisitor) {
+	v.visitIfStmt(s)
+}
+
 type stmtVar struct {
 	stmtInterface
 }

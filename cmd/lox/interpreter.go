@@ -50,6 +50,14 @@ func (i *interpreter) visitVarStmt(s *stmtVar) {
 	i.define(name, val)
 }
 
+func (i *interpreter) visitIfStmt(s *stmtIf) {
+	if i.isTruthy(s.condition) {
+		i.execute(s.thenBranch)
+	} else if s.elseBranch != nil {
+		i.execute(s.elseBranch)
+	}
+}
+
 func (i *interpreter) visitPrintStmt(s *stmtPrint) {
 	val := i.evaluate(s.expr())
 	fmt.Printf("%v\n", val)
