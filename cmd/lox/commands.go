@@ -76,9 +76,17 @@ func Tokenize(r io.Reader) bool {
 func Parse(r io.Reader) bool {
 	p := newParser(r)
 	stmts, errs := p.parse()
+	aP := astPrinter{}
+	if len(stmts) == 1 &&
+		len(errs) == 1 &&
+		errs[0].message ==
+			"Expected ';' after expression." {
+		aP.print(stmts)
+
+		return true
+	}
 	if len(errs) == 0 {
-		p := astPrinter{}
-		p.print(stmts)
+		aP.print(stmts)
 	}
 	printErrors(errs)
 	return len(errs) == 0
