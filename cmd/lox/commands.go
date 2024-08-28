@@ -44,7 +44,7 @@ func Repl() {
 
 func handleStmt(stmt stmtInterface, i *interpreter) {
 	defer continueOnError()
-	i.handleStmt(stmt)
+	i.execute(stmt)
 }
 
 func continueOnError() {

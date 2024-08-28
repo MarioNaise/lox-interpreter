@@ -22,16 +22,6 @@ func (i *interpreter) evaluate(e exprInterface) any {
 }
 
 func (i *interpreter) execute(s stmtInterface) {
-	s.accept(i)
-}
-
-func (i *interpreter) interpret(stmts []stmtInterface) {
-	for _, s := range stmts {
-		i.handleStmt(s)
-	}
-}
-
-func (i *interpreter) handleStmt(s stmtInterface) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.synchronize()
@@ -39,6 +29,12 @@ func (i *interpreter) handleStmt(s stmtInterface) {
 		}
 	}()
 	s.accept(i)
+}
+
+func (i *interpreter) interpret(stmts []stmtInterface) {
+	for _, s := range stmts {
+		i.execute(s)
+	}
 }
 
 func (i *interpreter) visitVarStmt(s *stmtVar) {
@@ -66,9 +62,7 @@ func (i *interpreter) visitPrintStmt(s *stmtPrint) {
 func (i *interpreter) visitBlockStmt(s *stmtBlock) {
 	prevEnv := i.environment
 	i.environment = newEnvironment(prevEnv)
-	for _, s := range s.statements {
-		i.handleStmt(s)
-	}
+	i.interpret(s.statements)
 	i.environment = prevEnv
 }
 
@@ -77,8 +71,8 @@ func (i *interpreter) visitExprStmt(s *stmtExpr) {
 }
 
 func (i *interpreter) visitEquality(e *expressionEquality) any {
-	left := e.expr().accept(i)
-	right := e.next().accept(i)
+	left := i.evaluate(e.expr())
+	right := i.evaluate(e.next())
 	if !i.hasSameType(left, right) {
 		return false
 	}
@@ -111,7 +105,7 @@ func (i *interpreter) visitTerm(e *expressionTerm) any {
 	switch e.tokenType() {
 	case PLUS:
 		if i.evaluatesToString(e) {
-			return fmt.Sprintf("%v%v", e.expr().accept(i), e.next().accept(i))
+			return fmt.Sprintf("%v%v", i.evaluate(e.expr()), i.evaluate(e.next()))
 		}
 		left := i.parseFloat(e.expr())
 		right := i.parseFloat(e.next())
@@ -162,7 +156,7 @@ func (i *interpreter) visitLiteral(e *expressionLiteral) any {
 }
 
 func (i *interpreter) visitGroup(e *expressionGroup) any {
-	return e.exprInterface.accept(i)
+	return i.evaluate(e.exprInterface)
 }
 
 func (i *interpreter) visitExpr(e *expression) any {
@@ -173,11 +167,11 @@ func (i *interpreter) evaluatesToString(e exprInterface) bool {
 	if e.expr() == nil || e.next() == nil {
 		return e.tokenType() == STRING
 	}
-	switch e.expr().accept(i).(type) {
+	switch i.evaluate(e.expr()).(type) {
 	case string:
 		return true
 	}
-	switch e.next().accept(i).(type) {
+	switch i.evaluate(e.next()).(type) {
 	case string:
 		return true
 	}
