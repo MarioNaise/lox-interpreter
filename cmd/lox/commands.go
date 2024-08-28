@@ -29,7 +29,7 @@ func Repl() {
 			for _, stmt := range stmts {
 				switch stmt := stmt.(type) {
 				case *stmtExpr:
-					fmt.Println(i.evaluate(stmt.expr()))
+					i.execute(&stmtPrint{stmt})
 				default:
 					handleStmt(stmt, i)
 				}
@@ -90,7 +90,8 @@ func Evaluate(r io.Reader) bool {
 	i.tokenize()
 	expr := i.expression()
 	if len(i.parseErrors) == 0 {
-		fmt.Println(i.evaluate(expr))
+		stmt := &stmtPrint{&stmtExpr{initializer: expr}}
+		i.visitPrintStmt(stmt)
 	}
 	printErrors(i.parseErrors)
 	return len(i.parseErrors) == 0

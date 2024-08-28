@@ -56,7 +56,7 @@ func (i *interpreter) visitIfStmt(s *stmtIf) {
 
 func (i *interpreter) visitPrintStmt(s *stmtPrint) {
 	val := i.evaluate(s.expr())
-	fmt.Printf("%v\n", val)
+	fmt.Printf(i.stringify(val) + "\n")
 }
 
 func (i *interpreter) visitBlockStmt(s *stmtBlock) {
@@ -210,4 +210,11 @@ func (i *interpreter) isTruthy(e exprInterface) bool {
 	default:
 		return false
 	}
+}
+
+func (i *interpreter) stringify(val any) string {
+	if val == nil {
+		return "nil"
+	}
+	return fmt.Sprintf("%v", val)
 }
