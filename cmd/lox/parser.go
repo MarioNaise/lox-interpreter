@@ -35,7 +35,20 @@ func (p *parser) declaration() stmtInterface {
 	return p.statement()
 }
 
+func (p *parser) varDeclaration() stmtInterface {
+	name := p.consume(IDENTIFIER, "Expected variable name.")
+	var initializer exprInterface
+	if p.match(EQUAL) {
+		initializer = p.expression()
+	}
+	p.consume(SEMICOLON, "Expected ';' after variable declaration.")
+	return &stmtVar{&stmtExpr{initializer, name}}
+}
+
 func (p *parser) statement() stmtInterface {
+	if p.match(FOR) {
+		return p.forStmt()
+	}
 	if p.match(IF) {
 		return p.ifStmt()
 	}
@@ -53,14 +66,39 @@ func (p *parser) statement() stmtInterface {
 	return &stmtExpr{initializer: expr}
 }
 
-func (p *parser) varDeclaration() stmtInterface {
-	name := p.consume(IDENTIFIER, "Expected variable name.")
-	var initializer exprInterface
-	if p.match(EQUAL) {
-		initializer = p.expression()
+func (p *parser) forStmt() stmtInterface {
+	p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+	var initializer stmtInterface
+	if p.match(SEMICOLON) {
+		initializer = nil
+	} else if p.match(VAR) {
+		initializer = p.varDeclaration()
+	} else {
+		initializer = &stmtExpr{initializer: p.expression()}
 	}
-	p.consume(SEMICOLON, "Expected ';' after variable declaration.")
-	return &stmtVar{&stmtExpr{initializer, name}}
+	var condition exprInterface
+	if !p.check(SEMICOLON) {
+		condition = p.expression()
+	}
+	p.consume(SEMICOLON, "Expect ';' after loop condition.")
+	var increment exprInterface
+	if !p.check(RIGHT_PAREN) {
+		increment = p.expression()
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+	body := p.statement()
+	if increment != nil {
+		body = &stmtBlock{statements: []stmtInterface{body, &stmtExpr{initializer: increment}}}
+	}
+	if condition == nil {
+		exprTrue := &expression{nil, nil, token{tokenType: TRUE, lexeme: "true", literal: "true", line: p.peek().line}}
+		condition = &expressionLiteral{exprTrue, true}
+	}
+	body = &stmtWhile{condition: condition, body: body}
+	if initializer != nil {
+		body = &stmtBlock{statements: []stmtInterface{initializer, body}}
+	}
+	return body
 }
 
 func (p *parser) ifStmt() stmtInterface {
