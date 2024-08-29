@@ -2,7 +2,6 @@ package lox
 
 import (
 	"fmt"
-	"io"
 	"strconv"
 )
 
@@ -13,8 +12,8 @@ type parser struct {
 	current     int
 }
 
-func newParser(r io.Reader) *parser {
-	return &parser{scanner: newScanner(r)}
+func newParser(str string) *parser {
+	return &parser{scanner: newScanner(str)}
 }
 
 func (p *parser) parse() ([]stmtInterface, []loxError) {

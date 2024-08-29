@@ -1,10 +1,7 @@
 package lox
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -15,9 +12,8 @@ type regexRule struct {
 }
 
 type scanner struct {
-	*bufio.Scanner
 	specCharTokenTypes map[string]string
-	tmpBuffer          string
+	buffer             string
 	tokens             []token
 	scanErrors         []loxError
 	regexRules         []regexRule
@@ -30,57 +26,46 @@ type scanner struct {
 func (s *scanner) tokenize() ([]token, []loxError) {
 	s.tokens, s.scanErrors = []token{}, []loxError{}
 	s.current = 0
-	for s.Scan() {
-		s.line++
-		s.scanLine()
-	}
-	if s.tmpBuffer != "" {
-		if s.tmpBuffer[s.current:s.current+1] == `"` {
-			s.scanErrors = append(s.scanErrors, newError("Unterminated string.", s.line))
-			s.current++
-		} else {
-			s.scanErrors = append(s.scanErrors, newError("Unexpected character: "+string(s.tmpBuffer[s.current]), s.line))
-			s.current++
+	s.line = 1
+outer:
+	for s.current < len(s.buffer) {
+		found := false
+		for _, rule := range s.regexRules {
+			r := regexp.MustCompile(`^` + rule.regex)
+			loc := r.FindIndex([]byte(s.buffer[s.current:]))
+			if len(loc) == 0 {
+				continue
+			}
+			val := s.buffer[s.current : s.current+loc[1]]
+			found = true
+			rule.handler(val)
+			s.current += len(val)
+			continue outer
 		}
-	}
-
-	if err := s.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		if !found {
+			next := s.buffer[s.current : s.current+1]
+			if next == `"` {
+				s.scanErrors = append(s.scanErrors, newError("Unterminated string.", s.line))
+				s.current++
+				break outer
+			} else {
+				s.scanErrors = append(s.scanErrors, newError(fmt.Sprintf("Unexpected character: %s", next), s.line))
+				s.current++
+			}
+		}
 	}
 	s.tokens = append(s.tokens, newToken(EOF, "", NULL, s.line))
 	return s.tokens, s.scanErrors
 }
 
-func (s *scanner) scanLine() {
-	text := s.tmpBuffer + s.Text()[s.current:]
-outer:
-	for s.current < len(text) {
-		valueFound := false
-		for _, rule := range s.regexRules {
-			reg := regexp.MustCompile(rule.regex)
-			loc := reg.FindIndex([]byte(text[s.current:]))
-			if len(loc) < 2 || loc[0] != 0 {
-				continue
-			}
-			valueFound = true
-			s.tmpBuffer = ""
-			value := string(text[s.current : s.current+loc[1]])
-			rule.handler(value)
-			s.current += len(value)
-			continue outer
-		}
-		if !valueFound {
-			s.tmpBuffer += s.Text()[s.current:] + "\n"
-			s.current++
-			break outer
-		}
-	}
-	s.current = 0
-}
-
 func (s *scanner) defaultHandler(val string) {
 	s.tokens = append(s.tokens, newToken(strings.ToUpper(val), val, NULL, s.line))
+}
+
+func (s *scanner) whitespaceHandler(val string) {
+	if val == "\n" {
+		s.line++
+	}
 }
 
 func (s *scanner) specialCharHandler(val string) {
@@ -88,6 +73,8 @@ func (s *scanner) specialCharHandler(val string) {
 }
 
 func (s *scanner) stringHandler(val string) {
+	linesSkipped := len(regexp.MustCompile(`\n`).FindAllString(val, len(val)))
+	s.line += linesSkipped
 	s.tokens = append(s.tokens, newToken(STRING, val, val[1:len(val)-1], s.line))
 }
 
@@ -109,12 +96,12 @@ func (s *scanner) numberHandler(val string) {
 	s.tokens = append(s.tokens, newToken(NUMBER, val, literal, s.line))
 }
 
-func newScanner(r io.Reader) *scanner {
-	l := &scanner{Scanner: bufio.NewScanner(r)}
+func newScanner(str string) *scanner {
+	l := &scanner{buffer: str}
 
 	regexRules := []regexRule{
 		{regex: "//.*", handler: func(_ string) {}},
-		{regex: `\s+`, handler: func(_ string) {}},
+		{regex: `\s`, handler: l.whitespaceHandler},
 		{regex: `"[^"]*"`, handler: l.stringHandler},
 		{regex: "[a-zA-Z_][a-zA-Z0-9_]*", handler: l.identifierHandler},
 		{regex: `\d+(\.\d+)?`, handler: l.numberHandler},

@@ -3,10 +3,8 @@ package lox
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"regexp"
-	"strings"
 )
 
 const (
@@ -16,14 +14,13 @@ const (
 
 func Repl() {
 	s := bufio.NewScanner(os.Stdin)
-	i := newInterpreter(nil)
+	i := newInterpreter("")
 	fmt.Print(PROMPT)
 	for s.Scan() {
 		if s.Text() == EXIT {
 			return
 		}
-		r := strings.NewReader(s.Text())
-		i.parser = newParser(r)
+		i.parser = newParser(s.Text())
 		stmts, parseErrors := i.parse()
 		if len(parseErrors) == 0 {
 			for _, stmt := range stmts {
@@ -63,8 +60,8 @@ func replError(err string) string {
 	return reg.ReplaceAllString(err, "")
 }
 
-func Tokenize(r io.Reader) bool {
-	s := newScanner(r)
+func Tokenize(str string) bool {
+	s := newScanner(str)
 	tokens, errs := s.tokenize()
 	for _, token := range tokens {
 		fmt.Println(token)
@@ -73,8 +70,8 @@ func Tokenize(r io.Reader) bool {
 	return len(errs) == 0
 }
 
-func Parse(r io.Reader) bool {
-	p := newParser(r)
+func Parse(str string) bool {
+	p := newParser(str)
 	stmts, errs := p.parse()
 	aP := astPrinter{}
 	if len(stmts) == 1 &&
@@ -92,15 +89,16 @@ func Parse(r io.Reader) bool {
 	return len(errs) == 0
 }
 
-func Evaluate(r io.Reader) bool {
+func Evaluate(str string) bool {
 	defer exitOnError()
-	i := newInterpreter(r)
+	i := newInterpreter(str)
 	i.tokenize()
 	expr := i.expression()
-	if expr == nil {
-		return true
-	}
 	errs := append(i.scanErrors, i.parseErrors...)
+	if expr == nil {
+		printErrors(errs)
+		return len(errs) == 0
+	}
 	if len(errs) == 0 {
 		stmt := &stmtPrint{&stmtExpr{initializer: expr}}
 		i.visitPrintStmt(stmt)
@@ -109,8 +107,8 @@ func Evaluate(r io.Reader) bool {
 	return len(errs) == 0
 }
 
-func Run(r io.Reader) bool {
-	i := newInterpreter(r)
+func Run(str string) bool {
+	i := newInterpreter(str)
 	defer exitOnError()
 	stmts, errs := i.parse()
 	if len(errs) == 0 {

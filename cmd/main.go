@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"lox/cmd/lox"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -37,7 +35,7 @@ func main() {
 }
 
 func handleTokenizeCommand() {
-	r := getFileReader(os.Args[2])
+	r := getFileContent(os.Args[2])
 	ok := lox.Tokenize(r)
 	if !ok {
 		os.Exit(65)
@@ -45,7 +43,7 @@ func handleTokenizeCommand() {
 }
 
 func handleParseCommand() {
-	r := getFileReader(os.Args[2])
+	r := getFileContent(os.Args[2])
 	ok := lox.Parse(r)
 	if !ok {
 		os.Exit(65)
@@ -53,7 +51,7 @@ func handleParseCommand() {
 }
 
 func handleEvaluateCommand() {
-	r := getFileReader(os.Args[2])
+	r := getFileContent(os.Args[2])
 	ok := lox.Evaluate(r)
 	if !ok {
 		os.Exit(65)
@@ -61,18 +59,18 @@ func handleEvaluateCommand() {
 }
 
 func handleRunCommand() {
-	r := getFileReader(os.Args[2])
+	r := getFileContent(os.Args[2])
 	ok := lox.Run(r)
 	if !ok {
 		os.Exit(65)
 	}
 }
 
-func getFileReader(filename string) io.Reader {
+func getFileContent(filename string) string {
 	fileContents, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	return strings.NewReader(string(fileContents))
+	return string(fileContents)
 }

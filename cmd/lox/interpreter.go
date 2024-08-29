@@ -2,7 +2,6 @@ package lox
 
 import (
 	"fmt"
-	"io"
 	"reflect"
 )
 
@@ -11,9 +10,9 @@ type interpreter struct {
 	*environment
 }
 
-func newInterpreter(r io.Reader) *interpreter {
+func newInterpreter(str string) *interpreter {
 	env := newEnvironment(nil)
-	p := newParser(r)
+	p := newParser(str)
 	return &interpreter{p, env}
 }
 
