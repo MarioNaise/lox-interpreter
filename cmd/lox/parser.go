@@ -42,6 +42,9 @@ func (p *parser) statement() stmtInterface {
 	if p.match(PRINT) {
 		return p.printStmt()
 	}
+	if p.match(WHILE) {
+		return p.whileStmt()
+	}
 	if p.match(LEFT_BRACE) {
 		return p.blockStmt()
 	}
@@ -76,6 +79,14 @@ func (p *parser) printStmt() stmtInterface {
 	value := p.expression()
 	p.consume(SEMICOLON, "Expected ';' after value.")
 	return &stmtPrint{&stmtExpr{initializer: value}}
+}
+
+func (p *parser) whileStmt() stmtInterface {
+	p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
+	condition := p.expression()
+	p.consume(RIGHT_PAREN, "Expect ')' after condition.")
+	body := p.statement()
+	return &stmtWhile{condition: condition, body: body}
 }
 
 func (p *parser) blockStmt() stmtInterface {

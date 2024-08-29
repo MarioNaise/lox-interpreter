@@ -48,6 +48,12 @@ func (a *astPrinter) visitPrintStmt(s *stmtPrint) {
 	a.printExpr(s.expr())
 }
 
+func (a *astPrinter) visitWhileStmt(s *stmtWhile) {
+	a.prefix(WHILE)
+	a.printExpr(s.condition)
+	s.body.accept(a)
+}
+
 func (a *astPrinter) visitBlockStmt(s *stmtBlock) {
 	fmt.Println(BLOCK)
 	for _, stmt := range s.statements {

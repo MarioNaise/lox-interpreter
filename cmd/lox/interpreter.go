@@ -58,6 +58,12 @@ func (i *interpreter) visitPrintStmt(s *stmtPrint) {
 	fmt.Printf(i.stringify(val) + "\n")
 }
 
+func (i *interpreter) visitWhileStmt(s *stmtWhile) {
+	for i.isTruthy(s.condition) {
+		i.execute(s.body)
+	}
+}
+
 func (i *interpreter) visitBlockStmt(s *stmtBlock) {
 	prevEnv := i.environment
 	i.environment = newEnvironment(prevEnv)

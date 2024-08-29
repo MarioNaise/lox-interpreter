@@ -20,6 +20,11 @@ type stmtIf struct {
 type stmtPrint struct {
 	stmtInterface
 }
+type stmtWhile struct {
+	stmtInterface
+	condition exprInterface
+	body      stmtInterface
+}
 
 type stmtBlock struct {
 	stmtInterface
@@ -41,6 +46,10 @@ func (s *stmtIf) accept(v stmtVisitor) {
 
 func (s *stmtPrint) accept(v stmtVisitor) {
 	v.visitPrintStmt(s)
+}
+
+func (s *stmtWhile) accept(v stmtVisitor) {
+	v.visitWhileStmt(s)
 }
 
 func (s *stmtBlock) accept(v stmtVisitor) {
