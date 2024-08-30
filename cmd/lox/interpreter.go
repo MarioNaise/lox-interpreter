@@ -167,6 +167,23 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 	}
 }
 
+func (i *interpreter) visitCall(e *expressionCall) any {
+	callee := i.evaluate(e.callee)
+	args := make([]any, 0)
+	for _, arg := range e.args {
+		args = append(args, i.evaluate(arg))
+	}
+	function, ok := callee.(callable)
+	if !ok {
+		panic(newError("Can only call functions and classes.", e.token().line))
+	}
+	if len(e.args) != function.arity() {
+		err := newError(fmt.Sprintf("Expected %d arguments but got %d.", function.arity(), len(e.args)), e.token().line)
+		panic(err)
+	}
+	return function.call(i, args)
+}
+
 func (i *interpreter) visitLiteral(e *expressionLiteral) any {
 	return e.value()
 }

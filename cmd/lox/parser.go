@@ -235,7 +235,37 @@ func (p *parser) unary() exprInterface {
 		return &expressionUnary{&expression{nil, right, operator}}
 	}
 
-	return p.primary()
+	return p.call()
+}
+
+func (p *parser) call() exprInterface {
+	expr := p.primary()
+	for {
+		if p.match(LEFT_PAREN) {
+			expr = p.finishCall(expr)
+		} else {
+			break
+		}
+	}
+	return expr
+}
+
+func (p *parser) finishCall(callee exprInterface) exprInterface {
+	args := []exprInterface{}
+	if !p.check(RIGHT_PAREN) {
+		for {
+			if len(args) >= 255 {
+				err := newError("Can't have more than 255 arguments.", p.peek().line)
+				p.parseErrors = append(p.parseErrors, err)
+			}
+			args = append(args, p.expression())
+			if !p.match(COMMA) {
+				break
+			}
+		}
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
+	return &expressionCall{callee, callee, args}
 }
 
 func (p *parser) primary() exprInterface {

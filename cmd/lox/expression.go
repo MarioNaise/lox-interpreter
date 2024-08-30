@@ -42,6 +42,12 @@ type expressionUnary struct {
 	exprInterface
 }
 
+type expressionCall struct {
+	exprInterface
+	callee exprInterface
+	args   []exprInterface
+}
+
 type expressionLiteral struct {
 	exprInterface
 	val any
@@ -50,6 +56,7 @@ type expressionLiteral struct {
 type expressionGroup struct {
 	exprInterface
 }
+
 type expression struct {
 	expression exprInterface
 	right      exprInterface
@@ -82,6 +89,10 @@ func (e *expressionTerm) accept(v expressionVisitor) any {
 
 func (e *expressionFactor) accept(v expressionVisitor) any {
 	return v.visitFactor(e)
+}
+
+func (e *expressionCall) accept(v expressionVisitor) any {
+	return v.visitCall(e)
 }
 
 func (e *expressionUnary) accept(v expressionVisitor) any {

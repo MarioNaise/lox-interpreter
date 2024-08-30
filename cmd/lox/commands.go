@@ -15,8 +15,7 @@ const (
 func Repl() {
 	s := bufio.NewScanner(os.Stdin)
 	i := newInterpreter("")
-	fmt.Print(PROMPT)
-	for s.Scan() {
+	for fmt.Print(PROMPT); s.Scan(); fmt.Print(PROMPT) {
 		if s.Text() == EXIT {
 			return
 		}
@@ -26,7 +25,7 @@ func Repl() {
 			for _, stmt := range stmts {
 				switch stmt := stmt.(type) {
 				case *stmtExpr:
-					i.execute(&stmtPrint{stmt})
+					handleStmt(&stmtPrint{stmt}, i)
 				default:
 					handleStmt(stmt, i)
 				}
@@ -35,7 +34,6 @@ func Repl() {
 		for _, err := range parseErrors {
 			fmt.Fprintln(os.Stderr, replError(err.String()))
 		}
-		fmt.Print(PROMPT)
 	}
 }
 

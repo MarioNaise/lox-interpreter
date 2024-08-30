@@ -98,6 +98,10 @@ func (a *astPrinter) visitUnary(e *expressionUnary) any {
 	return a.parenthesized(e.lexeme(), e.next())
 }
 
+func (a *astPrinter) visitCall(e *expressionCall) any {
+	return a.parenthesized(e.callee.lexeme(), e.args...)
+}
+
 func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
 	return a.primary(e)
 }
