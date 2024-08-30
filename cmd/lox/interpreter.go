@@ -8,12 +8,15 @@ import (
 type interpreter struct {
 	*parser
 	*environment
+	globals *environment
 }
 
 func newInterpreter(str string) *interpreter {
-	env := newEnvironment(nil)
+	glob := newEnvironment(nil)
+	env := newEnvironment(glob)
+	glob.define("clock", globals()["clock"])
 	p := newParser(str)
-	return &interpreter{p, env}
+	return &interpreter{p, env, glob}
 }
 
 func (i *interpreter) evaluate(e exprInterface) any {
