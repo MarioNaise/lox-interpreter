@@ -6,6 +6,12 @@ type stmtInterface interface {
 	accept(v stmtVisitor)
 }
 
+type stmtFun struct {
+	stmtInterface
+	token
+	params []token
+}
+
 type stmtVar struct {
 	stmtInterface
 }
@@ -34,6 +40,10 @@ type stmtBlock struct {
 type stmtExpr struct {
 	initializer exprInterface
 	token
+}
+
+func (s *stmtFun) accept(v stmtVisitor) {
+	v.visitFunStmt(s)
 }
 
 func (s *stmtVar) accept(v stmtVisitor) {

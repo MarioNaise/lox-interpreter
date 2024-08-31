@@ -39,6 +39,11 @@ func (i *interpreter) interpret(stmts []stmtInterface) {
 	}
 }
 
+func (i *interpreter) visitFunStmt(s *stmtFun) {
+	function := &loxFunction{declaration: s, environment: newEnvironment(i.environment)}
+	i.define(s.lexeme, function)
+}
+
 func (i *interpreter) visitVarStmt(s *stmtVar) {
 	var val any
 	name := s.name().lexeme
@@ -68,9 +73,13 @@ func (i *interpreter) visitWhileStmt(s *stmtWhile) {
 }
 
 func (i *interpreter) visitBlockStmt(s *stmtBlock) {
+	i.executeBlock(s.statements, newEnvironment(i.environment))
+}
+
+func (i *interpreter) executeBlock(stmts []stmtInterface, env *environment) {
 	prevEnv := i.environment
-	i.environment = newEnvironment(prevEnv)
-	i.interpret(s.statements)
+	i.environment = env
+	i.interpret(stmts)
 	i.environment = prevEnv
 }
 
@@ -176,7 +185,7 @@ func (i *interpreter) visitCall(e *expressionCall) any {
 	for _, arg := range e.args {
 		args = append(args, i.evaluate(arg))
 	}
-	function, ok := callee.(callable)
+	function, ok := callee.(callableInterface)
 	if !ok {
 		panic(newError("Can only call functions and classes.", e.token().line))
 	}

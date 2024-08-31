@@ -29,10 +29,35 @@ func (p *parser) expression() exprInterface {
 }
 
 func (p *parser) declaration() stmtInterface {
+	if p.match(FUN) {
+		return p.function("function")
+	}
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
 	return p.statement()
+}
+
+func (p *parser) function(kind string) stmtInterface {
+	name := p.consume(IDENTIFIER, "Expected "+kind+" name.")
+	p.consume(LEFT_PAREN, "Expected '(' after "+kind+" name.")
+	params := []token{}
+	getParam := func() {
+		if len(params) >= 255 {
+			err := newError("Can't have more than 255 parameters.", p.peek().line)
+			p.parseErrors = append(p.parseErrors, err)
+		}
+		params = append(params, p.consume(IDENTIFIER, "Expected parameter name."))
+	}
+	if !p.check(RIGHT_PAREN) {
+		for getParam(); p.match(COMMA); {
+			getParam()
+		}
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after parameters.")
+	p.consume(LEFT_BRACE, "Expect '{' before "+kind+" body.")
+	body := p.blockStmt()
+	return &stmtFun{body, name, params}
 }
 
 func (p *parser) varDeclaration() stmtInterface {

@@ -27,6 +27,16 @@ func (a *astPrinter) printExpr(e exprInterface) {
 	fmt.Println(e.accept(a))
 }
 
+func (a *astPrinter) visitFunStmt(s *stmtFun) {
+	a.prefix(fmt.Sprintf("%s:%s", FUN, s.lexeme))
+	p := []string{}
+	for _, param := range s.params {
+		p = append(p, param.lexeme)
+	}
+	fmt.Println("[", strings.Join(p, ", "), "]")
+	s.stmtInterface.accept(a)
+}
+
 func (a *astPrinter) visitVarStmt(s *stmtVar) {
 	a.prefix(VAR)
 	a.prefix(s.name().lexeme)
