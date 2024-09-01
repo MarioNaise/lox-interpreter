@@ -1,12 +1,13 @@
 package lox
 
-import "time"
+import (
+	"time"
+)
 
-func globals() map[string]callable {
-	return map[string]callable{
-		"clock": {evaluate: getTime, String: nativeFnString},
+func globals() map[string]any {
+	return map[string]any{
+		"clock": &builtin{function: getTime},
 	}
 }
 
-func getTime() any           { return time.Now().Unix() }
-func nativeFnString() string { return "<native fn>" }
+func getTime(*interpreter, []any) any { return float64(time.Now().Unix()) }

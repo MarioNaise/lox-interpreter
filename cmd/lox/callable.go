@@ -1,6 +1,6 @@
 package lox
 
-type callableInterface interface {
+type callable interface {
 	arity() int
 	call(*interpreter, []any) any
 }
@@ -10,7 +10,13 @@ type loxFunction struct {
 	declaration *stmtFun
 }
 
-func (f *loxFunction) arity() int { return len(f.declaration.params) }
+type builtin struct {
+	function func(*interpreter, []any) any
+	lenArgs  int
+}
+
+func (f *loxFunction) String() string { return "<fn " + f.declaration.lexeme + ">" }
+func (f *loxFunction) arity() int     { return len(f.declaration.params) }
 func (f *loxFunction) call(i *interpreter, args []any) any {
 	f.environment = newEnvironment(i.environment)
 	for i, param := range f.declaration.params {
@@ -21,11 +27,6 @@ func (f *loxFunction) call(i *interpreter, args []any) any {
 	return nil
 }
 
-type callable struct {
-	String   func() string
-	evaluate func() any
-	args     []any
-}
-
-func (c *callable) arity() int                       { return len(c.args) }
-func (c *callable) call(_ *interpreter, _ []any) any { return c.evaluate() }
+func (b *builtin) String() string                      { return "<native fn>" }
+func (b *builtin) arity() int                          { return b.lenArgs }
+func (b *builtin) call(i *interpreter, args []any) any { return b.function(i, args) }

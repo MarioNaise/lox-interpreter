@@ -14,7 +14,7 @@ type interpreter struct {
 func newInterpreter(str string) *interpreter {
 	glob := newEnvironment(nil)
 	env := newEnvironment(glob)
-	glob.define("clock", globals()["clock"])
+	glob.values = globals()
 	p := newParser(str)
 	return &interpreter{p, env, glob}
 }
@@ -185,7 +185,7 @@ func (i *interpreter) visitCall(e *expressionCall) any {
 	for _, arg := range e.args {
 		args = append(args, i.evaluate(arg))
 	}
-	function, ok := callee.(callableInterface)
+	function, ok := callee.(callable)
 	if !ok {
 		panic(newError("Can only call functions and classes.", e.token().line))
 	}

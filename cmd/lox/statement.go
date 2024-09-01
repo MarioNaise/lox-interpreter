@@ -26,6 +26,7 @@ type stmtIf struct {
 type stmtPrint struct {
 	stmtInterface
 }
+
 type stmtWhile struct {
 	stmtInterface
 	condition exprInterface

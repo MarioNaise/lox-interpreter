@@ -9,7 +9,6 @@ const (
 	BLOCK     = "BLOCK"
 	BLOCK_END = "BLOCK_END"
 	GROUP     = "GROUP"
-	INDENT    = "  "
 )
 
 type astPrinter struct{}
