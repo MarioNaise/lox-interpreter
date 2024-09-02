@@ -80,6 +80,9 @@ func (p *parser) statement() stmtInterface {
 	if p.match(PRINT) {
 		return p.printStmt()
 	}
+	if p.match(RETURN) {
+		return p.returnStmt()
+	}
 	if p.match(WHILE) {
 		return p.whileStmt()
 	}
@@ -142,6 +145,16 @@ func (p *parser) printStmt() stmtInterface {
 	value := p.expression()
 	p.consume(SEMICOLON, "Expected ';' after value.")
 	return &stmtPrint{&stmtExpr{initializer: value}}
+}
+
+func (p *parser) returnStmt() stmtInterface {
+	keyword := p.previous()
+	var val exprInterface
+	if !p.check(SEMICOLON) {
+		val = p.expression()
+	}
+	p.consume(SEMICOLON, "Expected ';' after return value.")
+	return &stmtReturn{keyword: keyword, value: val}
 }
 
 func (p *parser) whileStmt() stmtInterface {

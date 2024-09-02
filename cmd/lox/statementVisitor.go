@@ -5,6 +5,7 @@ type stmtVisitor interface {
 	visitVarStmt(stmt *stmtVar)
 	visitIfStmt(stmt *stmtIf)
 	visitPrintStmt(stmt *stmtPrint)
+	visitReturnStmt(stmt *stmtReturn)
 	visitWhileStmt(stmt *stmtWhile)
 	visitBlockStmt(stmt *stmtBlock)
 	visitExprStmt(stmt *stmtExpr)

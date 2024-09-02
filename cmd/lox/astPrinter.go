@@ -52,6 +52,11 @@ func (a *astPrinter) visitIfStmt(s *stmtIf) {
 	}
 }
 
+func (a *astPrinter) visitReturnStmt(s *stmtReturn) {
+	a.prefix(RETURN)
+	a.printExpr(s.value)
+}
+
 func (a *astPrinter) visitPrintStmt(s *stmtPrint) {
 	a.prefix(PRINT)
 	a.printExpr(s.expr())

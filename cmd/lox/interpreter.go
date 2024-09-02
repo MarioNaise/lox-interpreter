@@ -40,7 +40,7 @@ func (i *interpreter) interpret(stmts []stmtInterface) {
 }
 
 func (i *interpreter) visitFunStmt(s *stmtFun) {
-	function := &loxFunction{declaration: s, environment: newEnvironment(i.environment)}
+	function := &loxFunction{newEnvironment(i.environment), s}
 	i.define(s.lexeme, function)
 }
 
@@ -66,6 +66,17 @@ func (i *interpreter) visitPrintStmt(s *stmtPrint) {
 	fmt.Printf(i.stringify(val) + "\n")
 }
 
+type returnValue struct {
+	value any
+}
+
+func (i *interpreter) visitReturnStmt(s *stmtReturn) {
+	if s.value == nil {
+		panic(returnValue{nil})
+	}
+	panic(returnValue{i.evaluate(s.value)})
+}
+
 func (i *interpreter) visitWhileStmt(s *stmtWhile) {
 	for i.isTruthy(s.condition) {
 		i.execute(s.body)
@@ -78,9 +89,9 @@ func (i *interpreter) visitBlockStmt(s *stmtBlock) {
 
 func (i *interpreter) executeBlock(stmts []stmtInterface, env *environment) {
 	prevEnv := i.environment
+	defer func() { i.environment = prevEnv }()
 	i.environment = env
 	i.interpret(stmts)
-	i.environment = prevEnv
 }
 
 func (i *interpreter) visitExprStmt(s *stmtExpr) {

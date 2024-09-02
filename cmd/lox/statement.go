@@ -27,6 +27,12 @@ type stmtPrint struct {
 	stmtInterface
 }
 
+type stmtReturn struct {
+	stmtInterface
+	value   exprInterface
+	keyword token
+}
+
 type stmtWhile struct {
 	stmtInterface
 	condition exprInterface
@@ -57,6 +63,10 @@ func (s *stmtIf) accept(v stmtVisitor) {
 
 func (s *stmtPrint) accept(v stmtVisitor) {
 	v.visitPrintStmt(s)
+}
+
+func (s *stmtReturn) accept(v stmtVisitor) {
+	v.visitReturnStmt(s)
 }
 
 func (s *stmtWhile) accept(v stmtVisitor) {
