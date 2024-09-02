@@ -24,7 +24,7 @@ func (p *parser) parse() ([]stmtInterface, []loxError) {
 	return p.program, append(p.scanErrors, p.parseErrors...)
 }
 
-func (p *parser) expression() exprInterface {
+func (p *parser) expression() expression {
 	return p.assignment()
 }
 
@@ -62,12 +62,12 @@ func (p *parser) function(kind string) stmtInterface {
 
 func (p *parser) varDeclaration() stmtInterface {
 	name := p.consume(IDENTIFIER, "Expected variable name.")
-	var initializer exprInterface
+	var initializer expression
 	if p.match(EQUAL) {
 		initializer = p.expression()
 	}
 	p.consume(SEMICOLON, "Expected ';' after variable declaration.")
-	return &stmtVar{&stmtExpr{initializer, name}}
+	return &stmtVar{initializer, name}
 }
 
 func (p *parser) statement() stmtInterface {
@@ -91,7 +91,7 @@ func (p *parser) statement() stmtInterface {
 	}
 	expr := p.expression()
 	p.consume(SEMICOLON, "Expected ';' after expression.")
-	return &stmtExpr{initializer: expr}
+	return &stmtExpr{expr}
 }
 
 func (p *parser) forStmt() stmtInterface {
@@ -102,29 +102,29 @@ func (p *parser) forStmt() stmtInterface {
 	} else if p.match(VAR) {
 		initializer = p.varDeclaration()
 	} else {
-		initializer = &stmtExpr{initializer: p.expression()}
+		initializer = &stmtExpr{p.expression()}
 	}
-	var condition exprInterface
+	var condition expression
 	if !p.check(SEMICOLON) {
 		condition = p.expression()
 	}
 	p.consume(SEMICOLON, "Expect ';' after loop condition.")
-	var increment exprInterface
+	var increment expression
 	if !p.check(RIGHT_PAREN) {
 		increment = p.expression()
 	}
 	p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
 	body := p.statement()
 	if increment != nil {
-		body = &stmtBlock{statements: []stmtInterface{body, &stmtExpr{initializer: increment}}}
+		body = &stmtBlock{[]stmtInterface{body, &stmtExpr{increment}}}
 	}
 	if condition == nil {
-		exprTrue := &expression{nil, nil, token{tokenType: TRUE, lexeme: "true", literal: "true", line: p.peek().line}}
+		exprTrue := &exp{nil, nil, token{TRUE, "true", "true", p.peek().line}}
 		condition = &expressionLiteral{exprTrue, true}
 	}
-	body = &stmtWhile{condition: condition, body: body}
+	body = &stmtWhile{condition, body}
 	if initializer != nil {
-		body = &stmtBlock{statements: []stmtInterface{initializer, body}}
+		body = &stmtBlock{[]stmtInterface{initializer, body}}
 	}
 	return body
 }
@@ -138,23 +138,22 @@ func (p *parser) ifStmt() stmtInterface {
 	if p.match(ELSE) {
 		elseBranch = p.statement()
 	}
-	return &stmtIf{condition: condition, thenBranch: thenBranch, elseBranch: elseBranch}
+	return &stmtIf{condition, thenBranch, elseBranch}
 }
 
 func (p *parser) printStmt() stmtInterface {
 	value := p.expression()
 	p.consume(SEMICOLON, "Expected ';' after value.")
-	return &stmtPrint{&stmtExpr{initializer: value}}
+	return &stmtPrint{value}
 }
 
 func (p *parser) returnStmt() stmtInterface {
-	keyword := p.previous()
-	var val exprInterface
+	var val expression
 	if !p.check(SEMICOLON) {
 		val = p.expression()
 	}
 	p.consume(SEMICOLON, "Expected ';' after return value.")
-	return &stmtReturn{keyword: keyword, value: val}
+	return &stmtReturn{val}
 }
 
 func (p *parser) whileStmt() stmtInterface {
@@ -162,7 +161,7 @@ func (p *parser) whileStmt() stmtInterface {
 	condition := p.expression()
 	p.consume(RIGHT_PAREN, "Expect ')' after condition.")
 	body := p.statement()
-	return &stmtWhile{condition: condition, body: body}
+	return &stmtWhile{condition, body}
 }
 
 func (p *parser) blockStmt() stmtInterface {
@@ -171,17 +170,17 @@ func (p *parser) blockStmt() stmtInterface {
 		stmts = append(stmts, p.declaration())
 	}
 	p.consume(RIGHT_BRACE, "Expected '}' after block.")
-	return &stmtBlock{statements: stmts}
+	return &stmtBlock{stmts}
 }
 
-func (p *parser) assignment() exprInterface {
+func (p *parser) assignment() expression {
 	expr := p.or()
 	if p.match(EQUAL) {
 		operator := p.previous()
 		value := p.assignment()
 		switch expr := expr.(type) {
 		case *expressionVar:
-			exp := &expression{expr, value, operator}
+			exp := &exp{expr, value, operator}
 			return &expressionAssignment{exp}
 		}
 		err := newError("Invalid assignment target.", p.peek().line)
@@ -190,93 +189,93 @@ func (p *parser) assignment() exprInterface {
 	return expr
 }
 
-func (p *parser) or() exprInterface {
+func (p *parser) or() expression {
 	expr := p.and()
 	for p.match(OR) {
 		operator := p.previous()
 		right := p.and()
-		expr = &expressionLogical{&expression{expr, right, operator}}
+		expr = &expressionLogical{&exp{expr, right, operator}}
 	}
 	return expr
 }
 
-func (p *parser) and() exprInterface {
+func (p *parser) and() expression {
 	expr := p.equality()
 	for p.match(AND) {
 		operator := p.previous()
 		right := p.equality()
-		expr = &expressionLogical{&expression{expr, right, operator}}
+		expr = &expressionLogical{&exp{expr, right, operator}}
 	}
 	return expr
 }
 
-func (p *parser) equality() exprInterface {
+func (p *parser) equality() expression {
 	expr := p.comparison()
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
 		right := p.comparison()
-		return &expressionEquality{&expression{expr, right, operator}}
+		return &expressionEquality{&exp{expr, right, operator}}
 	}
 	return expr
 }
 
-func (p *parser) comparison() exprInterface {
+func (p *parser) comparison() expression {
 	expr := p.term()
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		operator := p.previous()
 		right := p.term()
-		expr = &expressionComparison{&expression{expr, right, operator}}
+		expr = &expressionComparison{&exp{expr, right, operator}}
 	}
 	return expr
 }
 
-func (p *parser) term() exprInterface {
+func (p *parser) term() expression {
 	expr := p.factor()
 	for p.match(PLUS) {
 		operator := p.previous()
 		right := p.factor()
-		expr = &expressionTerm{&expression{expr, right, operator}}
+		expr = &expressionTerm{&exp{expr, right, operator}}
 	}
 	for p.match(MINUS) {
 		operator := p.previous()
 		right := p.factor()
-		expr = &expressionTerm{&expression{expr, right, operator}}
+		expr = &expressionTerm{&exp{expr, right, operator}}
 	}
 
 	return expr
 }
 
-func (p *parser) factor() exprInterface {
+func (p *parser) factor() expression {
 	expr := p.unary()
 	for p.match(STAR) {
 		operator := p.previous()
 		right := p.unary()
-		expr = &expressionFactor{&expression{expr, right, operator}}
+		expr = &expressionFactor{&exp{expr, right, operator}}
 	}
 	for p.match(SLASH) {
 		operator := p.previous()
 		right := p.unary()
-		expr = &expressionFactor{&expression{expr, right, operator}}
+		expr = &expressionFactor{&exp{expr, right, operator}}
 	}
 	return expr
 }
 
-func (p *parser) unary() exprInterface {
+func (p *parser) unary() expression {
 	if p.match(BANG) {
 		operator := p.previous()
 		right := p.unary()
-		return &expressionUnary{&expression{nil, right, operator}}
+		return &expressionUnary{&exp{nil, right, operator}}
 	}
 	if p.match(MINUS) {
 		operator := p.previous()
 		right := p.unary()
-		return &expressionUnary{&expression{nil, right, operator}}
+		return &expressionUnary{&exp{nil, right, operator}}
 	}
 
 	return p.call()
 }
 
-func (p *parser) call() exprInterface {
+func (p *parser) call() expression {
 	expr := p.primary()
 	for {
 		if p.match(LEFT_PAREN) {
@@ -288,8 +287,8 @@ func (p *parser) call() exprInterface {
 	return expr
 }
 
-func (p *parser) finishCall(callee exprInterface) exprInterface {
-	args := []exprInterface{}
+func (p *parser) finishCall(callee expression) expression {
+	args := []expression{}
 	if !p.check(RIGHT_PAREN) {
 		for {
 			if len(args) >= 255 {
@@ -303,29 +302,29 @@ func (p *parser) finishCall(callee exprInterface) exprInterface {
 		}
 	}
 	p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
-	return &expressionCall{callee, callee, args}
+	return &expressionCall{callee, args}
 }
 
-func (p *parser) primary() exprInterface {
+func (p *parser) primary() expression {
 	if p.match(FALSE) {
-		return &expressionLiteral{&expression{nil, nil, p.previous()}, false}
+		return &expressionLiteral{&exp{nil, nil, p.previous()}, false}
 	}
 	if p.match(TRUE) {
-		return &expressionLiteral{&expression{nil, nil, p.previous()}, true}
+		return &expressionLiteral{&exp{nil, nil, p.previous()}, true}
 	}
 	if p.match(NIL) {
-		return &expressionLiteral{&expression{nil, nil, p.previous()}, nil}
+		return &expressionLiteral{&exp{nil, nil, p.previous()}, nil}
 	}
 	if p.match(NUMBER) {
 		val := p.getFloatFromToken(p.previous().literal)
-		return &expressionLiteral{&expression{nil, nil, p.previous()}, val}
+		return &expressionLiteral{&exp{nil, nil, p.previous()}, val}
 	}
 	if p.match(STRING) {
 		val := p.previous().literal
-		return &expressionLiteral{&expression{nil, nil, p.previous()}, val}
+		return &expressionLiteral{&exp{nil, nil, p.previous()}, val}
 	}
 	if p.match(IDENTIFIER) {
-		return &expressionVar{&expression{nil, nil, p.previous()}}
+		return &expressionVar{&exp{nil, nil, p.previous()}}
 	}
 	if p.match(LEFT_PAREN) {
 		expr := &expressionGroup{p.equality()}

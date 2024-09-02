@@ -15,7 +15,7 @@ type builtin struct {
 	lenArgs  int
 }
 
-func (f *loxFunction) String() string { return "<fn " + f.declaration.lexeme + ">" }
+func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexeme + ">" }
 func (f *loxFunction) arity() int     { return len(f.declaration.params) }
 func (f *loxFunction) call(i *interpreter, args []any) (value any) {
 	defer func() {
@@ -26,7 +26,7 @@ func (f *loxFunction) call(i *interpreter, args []any) (value any) {
 	for i, param := range f.declaration.params {
 		f.environment.define(param.lexeme, args[i])
 	}
-	block := f.declaration.stmtInterface.(*stmtBlock)
+	block := f.declaration.body.(*stmtBlock)
 	i.executeBlock(block.statements, f.environment)
 	return
 }

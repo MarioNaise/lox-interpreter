@@ -1,9 +1,9 @@
 package lox
 
-type exprInterface interface {
+type expression interface {
 	accept(v expressionVisitor) any
-	expr() exprInterface
-	next() exprInterface
+	expr() expression
+	next() expression
 	token() token
 	tokenType() string
 	lexeme() string
@@ -11,55 +11,54 @@ type exprInterface interface {
 }
 
 type expressionVar struct {
-	exprInterface
+	expression
 }
 
 type expressionAssignment struct {
-	exprInterface
+	expression
 }
 
 type expressionLogical struct {
-	exprInterface
+	expression
 }
 
 type expressionEquality struct {
-	exprInterface
+	expression
 }
 
 type expressionComparison struct {
-	exprInterface
+	expression
 }
 
 type expressionTerm struct {
-	exprInterface
+	expression
 }
 
 type expressionFactor struct {
-	exprInterface
+	expression
 }
 
 type expressionUnary struct {
-	exprInterface
+	expression
 }
 
 type expressionCall struct {
-	exprInterface
-	callee exprInterface
-	args   []exprInterface
+	expression
+	args []expression
 }
 
 type expressionLiteral struct {
-	exprInterface
+	expression
 	val any
 }
 
 type expressionGroup struct {
-	exprInterface
+	expression
 }
 
-type expression struct {
-	expression exprInterface
-	right      exprInterface
+type exp struct {
+	expression expression
+	right      expression
 	operator   token
 }
 
@@ -107,7 +106,7 @@ func (e *expressionGroup) accept(v expressionVisitor) any {
 	return v.visitGroup(e)
 }
 
-func (e *expression) accept(v expressionVisitor) any {
+func (e *exp) accept(v expressionVisitor) any {
 	return v.visitExpr(e)
 }
 
@@ -115,26 +114,26 @@ func (e *expressionLiteral) value() any {
 	return e.val
 }
 
-func (e *expression) expr() exprInterface {
+func (e *exp) expr() expression {
 	return e.expression
 }
 
-func (e *expression) next() exprInterface {
+func (e *exp) next() expression {
 	return e.right
 }
 
-func (e *expression) token() token {
+func (e *exp) token() token {
 	return e.operator
 }
 
-func (e *expression) tokenType() string {
+func (e *exp) tokenType() string {
 	return e.operator.tokenType
 }
 
-func (e *expression) lexeme() string {
+func (e *exp) lexeme() string {
 	return e.operator.lexeme
 }
 
-func (e *expression) literal() string {
+func (e *exp) literal() string {
 	return e.operator.literal
 }

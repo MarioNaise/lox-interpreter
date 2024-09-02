@@ -1,52 +1,45 @@
 package lox
 
 type stmtInterface interface {
-	expr() exprInterface
-	name() token
 	accept(v stmtVisitor)
 }
 
 type stmtFun struct {
-	stmtInterface
-	token
+	body   stmtInterface
+	name   token
 	params []token
 }
 
 type stmtVar struct {
-	stmtInterface
+	initializer expression
+	name        token
 }
 
 type stmtIf struct {
-	stmtInterface
-	condition  exprInterface
+	condition  expression
 	thenBranch stmtInterface
 	elseBranch stmtInterface
 }
 
 type stmtPrint struct {
-	stmtInterface
+	value expression
 }
 
 type stmtReturn struct {
-	stmtInterface
-	value   exprInterface
-	keyword token
+	value expression
 }
 
 type stmtWhile struct {
-	stmtInterface
-	condition exprInterface
+	condition expression
 	body      stmtInterface
 }
 
 type stmtBlock struct {
-	stmtInterface
 	statements []stmtInterface
 }
 
 type stmtExpr struct {
-	initializer exprInterface
-	token
+	initializer expression
 }
 
 func (s *stmtFun) accept(v stmtVisitor) {
@@ -79,12 +72,4 @@ func (s *stmtBlock) accept(v stmtVisitor) {
 
 func (s *stmtExpr) accept(v stmtVisitor) {
 	v.visitExprStmt(s)
-}
-
-func (s *stmtExpr) expr() exprInterface {
-	return s.initializer
-}
-
-func (s *stmtExpr) name() token {
-	return s.token
 }

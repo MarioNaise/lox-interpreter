@@ -19,7 +19,7 @@ func newInterpreter(str string) *interpreter {
 	return &interpreter{p, env, glob}
 }
 
-func (i *interpreter) evaluate(e exprInterface) any {
+func (i *interpreter) evaluate(e expression) any {
 	return e.accept(i)
 }
 
@@ -41,14 +41,14 @@ func (i *interpreter) interpret(stmts []stmtInterface) {
 
 func (i *interpreter) visitFunStmt(s *stmtFun) {
 	function := &loxFunction{newEnvironment(i.environment), s}
-	i.define(s.lexeme, function)
+	i.define(s.name.lexeme, function)
 }
 
 func (i *interpreter) visitVarStmt(s *stmtVar) {
 	var val any
-	name := s.name().lexeme
-	if s.expr() != nil {
-		val = i.evaluate(s.expr())
+	name := s.name.lexeme
+	if s.initializer != nil {
+		val = i.evaluate(s.initializer)
 	}
 	i.define(name, val)
 }
@@ -62,7 +62,7 @@ func (i *interpreter) visitIfStmt(s *stmtIf) {
 }
 
 func (i *interpreter) visitPrintStmt(s *stmtPrint) {
-	val := i.evaluate(s.expr())
+	val := i.evaluate(s.value)
 	fmt.Printf(i.stringify(val) + "\n")
 }
 
@@ -95,7 +95,7 @@ func (i *interpreter) executeBlock(stmts []stmtInterface, env *environment) {
 }
 
 func (i *interpreter) visitExprStmt(s *stmtExpr) {
-	i.evaluate(s.expr())
+	i.evaluate(s.initializer)
 }
 
 func (i *interpreter) visitVar(e *expressionVar) any {
@@ -191,7 +191,7 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 }
 
 func (i *interpreter) visitCall(e *expressionCall) any {
-	callee := i.evaluate(e.callee)
+	callee := i.evaluate(e.expression)
 	args := make([]any, 0)
 	for _, arg := range e.args {
 		args = append(args, i.evaluate(arg))
@@ -212,14 +212,14 @@ func (i *interpreter) visitLiteral(e *expressionLiteral) any {
 }
 
 func (i *interpreter) visitGroup(e *expressionGroup) any {
-	return i.evaluate(e.exprInterface)
+	return i.evaluate(e.expression)
 }
 
-func (i *interpreter) visitExpr(e *expression) any {
+func (i *interpreter) visitExpr(e *exp) any {
 	return ""
 }
 
-func (i *interpreter) evaluatesToString(e exprInterface) bool {
+func (i *interpreter) evaluatesToString(e expression) bool {
 	if e.expr() == nil || e.next() == nil {
 		return e.tokenType() == STRING
 	}
@@ -227,7 +227,7 @@ func (i *interpreter) evaluatesToString(e exprInterface) bool {
 		reflect.TypeOf(i.evaluate(e.next())).Name() == "string"
 }
 
-func (i *interpreter) parseFloat(e exprInterface) float64 {
+func (i *interpreter) parseFloat(e expression) float64 {
 	n := i.evaluate(e)
 	switch n := n.(type) {
 	case float64:
@@ -241,7 +241,7 @@ func (i *interpreter) hasSameType(a any, b any) bool {
 	return reflect.TypeOf(a).Name() == reflect.TypeOf(b).Name()
 }
 
-func (i *interpreter) isTruthy(e exprInterface) bool {
+func (i *interpreter) isTruthy(e expression) bool {
 	value := i.evaluate(e)
 	switch value := value.(type) {
 	case string:

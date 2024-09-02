@@ -19,7 +19,7 @@ func (a *astPrinter) print(stmts []stmtInterface) {
 	}
 }
 
-func (a *astPrinter) printExpr(e exprInterface) {
+func (a *astPrinter) printExpr(e expression) {
 	if e == nil {
 		return
 	}
@@ -27,19 +27,19 @@ func (a *astPrinter) printExpr(e exprInterface) {
 }
 
 func (a *astPrinter) visitFunStmt(s *stmtFun) {
-	a.prefix(fmt.Sprintf("%s:%s", FUN, s.lexeme))
+	a.prefix(fmt.Sprintf("%s:%s", FUN, s.name.lexeme))
 	p := []string{}
 	for _, param := range s.params {
 		p = append(p, param.lexeme)
 	}
 	fmt.Println("[", strings.Join(p, ", "), "]")
-	s.stmtInterface.accept(a)
+	s.body.accept(a)
 }
 
 func (a *astPrinter) visitVarStmt(s *stmtVar) {
 	a.prefix(VAR)
-	a.prefix(s.name().lexeme)
-	a.printExpr(s.expr())
+	a.prefix(s.initializer.lexeme())
+	a.printExpr(s.initializer)
 }
 
 func (a *astPrinter) visitIfStmt(s *stmtIf) {
@@ -59,7 +59,7 @@ func (a *astPrinter) visitReturnStmt(s *stmtReturn) {
 
 func (a *astPrinter) visitPrintStmt(s *stmtPrint) {
 	a.prefix(PRINT)
-	a.printExpr(s.expr())
+	a.printExpr(s.value)
 }
 
 func (a *astPrinter) visitWhileStmt(s *stmtWhile) {
@@ -77,7 +77,7 @@ func (a *astPrinter) visitBlockStmt(s *stmtBlock) {
 }
 
 func (a *astPrinter) visitExprStmt(s *stmtExpr) {
-	a.printExpr(s.expr())
+	a.printExpr(s.initializer)
 }
 
 func (a *astPrinter) visitVar(e *expressionVar) any {
@@ -113,7 +113,7 @@ func (a *astPrinter) visitUnary(e *expressionUnary) any {
 }
 
 func (a *astPrinter) visitCall(e *expressionCall) any {
-	return a.parenthesized(e.callee.lexeme(), e.args...)
+	return a.parenthesized(e.lexeme(), e.args...)
 }
 
 func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
@@ -121,19 +121,19 @@ func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
 }
 
 func (a *astPrinter) visitGroup(e *expressionGroup) any {
-	return a.parenthesized(GROUP, e.exprInterface)
+	return a.parenthesized(GROUP, e.expression)
 }
 
-func (a *astPrinter) visitExpr(e *expression) any { return "" }
+func (a *astPrinter) visitExpr(e *exp) any { return "" }
 
-func (a *astPrinter) primary(e exprInterface) any {
+func (a *astPrinter) primary(e expression) any {
 	if e.literal() != NULL {
 		return e.literal()
 	}
 	return e.lexeme()
 }
 
-func (a *astPrinter) parenthesized(name string, e ...exprInterface) string {
+func (a *astPrinter) parenthesized(name string, e ...expression) string {
 	s := []string{}
 	s = append(s, name)
 	for _, expr := range e {
@@ -145,7 +145,7 @@ func (a *astPrinter) parenthesized(name string, e ...exprInterface) string {
 	return strings.Join([]string{"(", str, ")"}, "")
 }
 
-func (a *astPrinter) defaultString(e exprInterface) string {
+func (a *astPrinter) defaultString(e expression) string {
 	return a.parenthesized(e.lexeme(), e.expr(), e.next())
 }
 

@@ -25,7 +25,7 @@ func Repl() {
 			for _, stmt := range stmts {
 				switch stmt := stmt.(type) {
 				case *stmtExpr:
-					handleStmt(&stmtPrint{stmt}, i)
+					handleStmt(&stmtPrint{stmt.initializer}, i)
 				default:
 					handleStmt(stmt, i)
 				}
@@ -98,7 +98,7 @@ func Evaluate(str string) bool {
 		return len(errs) == 0
 	}
 	if len(errs) == 0 {
-		stmt := &stmtPrint{&stmtExpr{initializer: expr}}
+		stmt := &stmtPrint{expr}
 		i.visitPrintStmt(stmt)
 	}
 	printErrors(errs)

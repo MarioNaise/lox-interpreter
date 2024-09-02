@@ -12,5 +12,5 @@ type expressionVisitor interface {
 	visitCall(expr *expressionCall) any
 	visitLiteral(expr *expressionLiteral) any
 	visitGroup(expr *expressionGroup) any
-	visitExpr(expr *expression) any
+	visitExpr(expr *exp) any
 }
