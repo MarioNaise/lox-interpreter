@@ -14,7 +14,7 @@ const (
 
 func Repl() {
 	s := bufio.NewScanner(os.Stdin)
-	i := newInterpreter("")
+	i := newInterpreter("", "")
 	for fmt.Print(PROMPT); s.Scan(); fmt.Print(PROMPT) {
 		if s.Text() == EXIT {
 			return
@@ -37,33 +37,13 @@ func Repl() {
 	}
 }
 
-func handleStmt(stmt stmtInterface, i *interpreter) {
-	defer continueOnError()
-	i.execute(stmt)
-}
-
-func handleExpr(exp expression, i *interpreter) {
-	defer continueOnError()
-	fmt.Println(i.stringify(i.evaluate(exp)))
-}
-
-func continueOnError() {
-	if r := recover(); r != nil {
-		switch r := r.(type) {
-		case loxError:
-			fmt.Fprintln(os.Stderr, replError(r.String()))
-		default:
-			fmt.Fprintln(os.Stderr, r)
-		}
-	}
-}
-
 func replError(err string) string {
 	reg := regexp.MustCompile(`\[line \d+\]\s`)
 	return reg.ReplaceAllString(err, "")
 }
 
-func Tokenize(str string) bool {
+func Tokenize(filePath string) bool {
+	str := GetFileContent(filePath)
 	s := newScanner(str)
 	tokens, errs := s.tokenize()
 	for _, token := range tokens {
@@ -73,7 +53,8 @@ func Tokenize(str string) bool {
 	return len(errs) == 0
 }
 
-func Parse(str string) bool {
+func Parse(filePath string) bool {
+	str := GetFileContent(filePath)
 	p := newParser(str)
 	stmts, errs := p.parse()
 	aP := astPrinter{}
@@ -92,9 +73,11 @@ func Parse(str string) bool {
 	return len(errs) == 0
 }
 
-func Evaluate(str string) bool {
+func Evaluate(filePath string) bool {
 	defer exitOnError()
-	i := newInterpreter(str)
+	str := GetFileContent(filePath)
+	dirPath := getPathFromFile(filePath)
+	i := newInterpreter(str, dirPath)
 	i.tokenize()
 	expr := i.expression()
 	errs := append(i.scanErrors, i.parseErrors...)
@@ -109,13 +92,10 @@ func Evaluate(str string) bool {
 	return len(errs) == 0
 }
 
-func handleExprEval(exp expression, i *interpreter) {
-	defer exitOnError()
-	fmt.Println(i.stringify(i.evaluate(exp)))
-}
-
-func Run(str string) bool {
-	i := newInterpreter(str)
+func Run(filePath string) bool {
+	str := GetFileContent(filePath)
+	dirPath := getPathFromFile(filePath)
+	i := newInterpreter(str, dirPath)
 	defer exitOnError()
 	stmts, errs := i.parse()
 	if len(errs) == 0 {
@@ -124,17 +104,4 @@ func Run(str string) bool {
 	}
 	printErrors(errs)
 	return false
-}
-
-func exitOnError() {
-	if r := recover(); r != nil {
-		fmt.Fprintln(os.Stderr, r)
-		os.Exit(70)
-	}
-}
-
-func printErrors(errors []loxError) {
-	for _, err := range errors {
-		fmt.Fprintln(os.Stderr, err)
-	}
 }

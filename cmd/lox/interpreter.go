@@ -9,14 +9,15 @@ type interpreter struct {
 	*parser
 	*environment
 	globals *environment
+	index   string
 }
 
-func newInterpreter(str string) *interpreter {
+func newInterpreter(str string, index string) *interpreter {
 	glob := newEnvironment(nil)
 	env := newEnvironment(glob)
 	glob.values = globals()
 	p := newParser(str)
-	return &interpreter{p, env, glob}
+	return &interpreter{p, env, glob, index}
 }
 
 func (i *interpreter) evaluate(e expression) any {

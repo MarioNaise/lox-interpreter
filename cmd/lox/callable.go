@@ -19,8 +19,14 @@ func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexem
 func (f *loxFunction) arity() int     { return len(f.declaration.params) }
 func (f *loxFunction) call(i *interpreter, args []any) (value any) {
 	defer func() {
-		if r, ok := recover().(returnValue); ok {
-			value = r.value
+		if r := recover(); r != nil {
+			switch r := r.(type) {
+			case returnValue:
+				value = r.value
+				return
+			default:
+				panic(r)
+			}
 		}
 	}()
 	for i, param := range f.declaration.params {

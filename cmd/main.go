@@ -35,42 +35,29 @@ func main() {
 }
 
 func handleTokenizeCommand() {
-	r := getFileContent(os.Args[2])
-	ok := lox.Tokenize(r)
+	ok := lox.Tokenize(os.Args[2])
 	if !ok {
 		os.Exit(65)
 	}
 }
 
 func handleParseCommand() {
-	r := getFileContent(os.Args[2])
-	ok := lox.Parse(r)
+	ok := lox.Parse(os.Args[2])
 	if !ok {
 		os.Exit(65)
 	}
 }
 
 func handleEvaluateCommand() {
-	r := getFileContent(os.Args[2])
-	ok := lox.Evaluate(r)
+	ok := lox.Evaluate(os.Args[2])
 	if !ok {
 		os.Exit(65)
 	}
 }
 
 func handleRunCommand() {
-	r := getFileContent(os.Args[2])
-	ok := lox.Run(r)
+	ok := lox.Run(os.Args[2])
 	if !ok {
 		os.Exit(65)
 	}
-}
-
-func getFileContent(filename string) string {
-	fileContents, err := os.ReadFile(filename)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	return string(fileContents)
 }
