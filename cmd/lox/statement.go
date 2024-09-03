@@ -21,10 +21,6 @@ type stmtIf struct {
 	elseBranch stmtInterface
 }
 
-type stmtPrint struct {
-	value expression
-}
-
 type stmtReturn struct {
 	value expression
 }
@@ -52,10 +48,6 @@ func (s *stmtVar) accept(v stmtVisitor) {
 
 func (s *stmtIf) accept(v stmtVisitor) {
 	v.visitIfStmt(s)
-}
-
-func (s *stmtPrint) accept(v stmtVisitor) {
-	v.visitPrintStmt(s)
 }
 
 func (s *stmtReturn) accept(v stmtVisitor) {

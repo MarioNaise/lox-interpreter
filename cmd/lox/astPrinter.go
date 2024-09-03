@@ -57,11 +57,6 @@ func (a *astPrinter) visitReturnStmt(s *stmtReturn) {
 	a.printExpr(s.value)
 }
 
-func (a *astPrinter) visitPrintStmt(s *stmtPrint) {
-	a.prefix(PRINT)
-	a.printExpr(s.value)
-}
-
 func (a *astPrinter) visitWhileStmt(s *stmtWhile) {
 	a.prefix(WHILE)
 	a.printExpr(s.condition)

@@ -25,7 +25,7 @@ func Repl() {
 			for _, stmt := range stmts {
 				switch stmt := stmt.(type) {
 				case *stmtExpr:
-					handleStmt(&stmtPrint{stmt.initializer}, i)
+					handleExpr(stmt.initializer, i)
 				default:
 					handleStmt(stmt, i)
 				}
@@ -40,6 +40,11 @@ func Repl() {
 func handleStmt(stmt stmtInterface, i *interpreter) {
 	defer continueOnError()
 	i.execute(stmt)
+}
+
+func handleExpr(exp expression, i *interpreter) {
+	defer continueOnError()
+	fmt.Println(i.stringify(i.evaluate(exp)))
 }
 
 func continueOnError() {
@@ -98,11 +103,15 @@ func Evaluate(str string) bool {
 		return len(errs) == 0
 	}
 	if len(errs) == 0 {
-		stmt := &stmtPrint{expr}
-		i.visitPrintStmt(stmt)
+		handleExprEval(expr, i)
 	}
 	printErrors(errs)
 	return len(errs) == 0
+}
+
+func handleExprEval(exp expression, i *interpreter) {
+	defer exitOnError()
+	fmt.Println(i.stringify(i.evaluate(exp)))
 }
 
 func Run(str string) bool {

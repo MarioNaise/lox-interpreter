@@ -61,11 +61,6 @@ func (i *interpreter) visitIfStmt(s *stmtIf) {
 	}
 }
 
-func (i *interpreter) visitPrintStmt(s *stmtPrint) {
-	val := i.evaluate(s.value)
-	fmt.Printf(i.stringify(val) + "\n")
-}
-
 type returnValue struct {
 	value any
 }
@@ -238,6 +233,9 @@ func (i *interpreter) parseFloat(e expression) float64 {
 }
 
 func (i *interpreter) hasSameType(a any, b any) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
 	return reflect.TypeOf(a).Name() == reflect.TypeOf(b).Name()
 }
 

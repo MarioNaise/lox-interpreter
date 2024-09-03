@@ -107,7 +107,7 @@ func newScanner(str string) *scanner {
 		{regex: `\d+(\.\d+)?`, handler: l.numberHandler},
 	}
 
-	l.keywords = []string{AND, CLASS, ELSE, FALSE, FOR, FUN, IF, NIL, OR, PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE}
+	l.keywords = []string{AND, CLASS, ELSE, FALSE, FOR, FUN, IF, NIL, OR, RETURN, SUPER, THIS, TRUE, VAR, WHILE}
 	for _, keyword := range l.keywords {
 		regexRules = append(regexRules, regexRule{regex: strings.ToLower(keyword), handler: l.defaultHandler})
 	}

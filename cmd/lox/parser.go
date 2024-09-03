@@ -77,9 +77,6 @@ func (p *parser) statement() stmtInterface {
 	if p.match(IF) {
 		return p.ifStmt()
 	}
-	if p.match(PRINT) {
-		return p.printStmt()
-	}
 	if p.match(RETURN) {
 		return p.returnStmt()
 	}
@@ -139,12 +136,6 @@ func (p *parser) ifStmt() stmtInterface {
 		elseBranch = p.statement()
 	}
 	return &stmtIf{condition, thenBranch, elseBranch}
-}
-
-func (p *parser) printStmt() stmtInterface {
-	value := p.expression()
-	p.consume(SEMICOLON, "Expected ';' after value.")
-	return &stmtPrint{value}
 }
 
 func (p *parser) returnStmt() stmtInterface {
@@ -397,7 +388,6 @@ func (p *parser) synchronize() {
 		case FOR:
 		case IF:
 		case WHILE:
-		case PRINT:
 		case RETURN:
 			return
 		}

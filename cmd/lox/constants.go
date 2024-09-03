@@ -16,7 +16,6 @@ const (
 	IF     = "IF"
 	NIL    = "NIL"
 	OR     = "OR"
-	PRINT  = "PRINT"
 	RETURN = "RETURN"
 	SUPER  = "SUPER"
 	THIS   = "THIS"
