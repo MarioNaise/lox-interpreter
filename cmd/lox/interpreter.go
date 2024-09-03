@@ -25,12 +25,7 @@ func (i *interpreter) evaluate(e expression) any {
 }
 
 func (i *interpreter) execute(s stmtInterface) {
-	defer func() {
-		if r := recover(); r != nil {
-			i.synchronize()
-			panic(r)
-		}
-	}()
+	defer i.syncOnError()
 	s.accept(i)
 }
 
@@ -187,6 +182,7 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 }
 
 func (i *interpreter) visitCall(e *expressionCall) any {
+	defer recoverLoxError(e.token())
 	callee := i.evaluate(e.expression)
 	args := make([]any, 0)
 	for _, arg := range e.args {
@@ -200,7 +196,7 @@ func (i *interpreter) visitCall(e *expressionCall) any {
 		err := newError(fmt.Sprintf("Expected %d arguments but got %d.", function.arity(), len(e.args)), e.token().line)
 		panic(err)
 	}
-	return function.call(i, args)
+	return function.call(i, args, e.token())
 }
 
 func (i *interpreter) visitLiteral(e *expressionLiteral) any {
@@ -261,4 +257,11 @@ func (i *interpreter) stringify(val any) string {
 		return "nil"
 	}
 	return fmt.Sprintf("%v", val)
+}
+
+func (i *interpreter) syncOnError() {
+	if r := recover(); r != nil {
+		i.synchronize()
+		panic(r)
+	}
 }

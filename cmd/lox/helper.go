@@ -65,3 +65,15 @@ func continueOnError() {
 		}
 	}
 }
+
+func recoverLoxError(t token) {
+	if r := recover(); r != nil {
+		switch r := r.(type) {
+		case loxError:
+			err := newError(r.message, t.line)
+			panic(err)
+		default:
+			panic(r)
+		}
+	}
+}

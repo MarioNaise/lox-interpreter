@@ -2,7 +2,7 @@ package lox
 
 type callable interface {
 	arity() int
-	call(*interpreter, []any) any
+	call(*interpreter, []any, token) any
 }
 
 type loxFunction struct {
@@ -11,13 +11,13 @@ type loxFunction struct {
 }
 
 type builtin struct {
-	function func(*interpreter, []any) any
+	function func(*interpreter, []any, token) any
 	lenArgs  int
 }
 
 func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexeme + ">" }
 func (f *loxFunction) arity() int     { return len(f.declaration.params) }
-func (f *loxFunction) call(i *interpreter, args []any) (value any) {
+func (f *loxFunction) call(i *interpreter, args []any, t token) (value any) {
 	defer func() {
 		if r := recover(); r != nil {
 			switch r := r.(type) {
@@ -37,6 +37,6 @@ func (f *loxFunction) call(i *interpreter, args []any) (value any) {
 	return
 }
 
-func (b *builtin) String() string                      { return "<native fn>" }
-func (b *builtin) arity() int                          { return b.lenArgs }
-func (b *builtin) call(i *interpreter, args []any) any { return b.function(i, args) }
+func (b *builtin) String() string                               { return "<native fn>" }
+func (b *builtin) arity() int                                   { return b.lenArgs }
+func (b *builtin) call(i *interpreter, args []any, t token) any { return b.function(i, args, t) }
