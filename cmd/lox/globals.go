@@ -15,6 +15,7 @@ func globals() map[string]any {
 		"print":  &builtin{function: printLn, lenArgs: 1},
 		"random": &builtin{function: random, lenArgs: 1},
 		"sleep":  &builtin{function: sleep, lenArgs: 1},
+		"string": &builtin{function: stringify, lenArgs: 1},
 		"import": &builtin{function: importFn, lenArgs: 1},
 	}
 }
@@ -43,6 +44,10 @@ func sleep(_ *interpreter, args []any, t token) any {
 	}
 	err := newError("sleep - Argument must be a number.", t.line)
 	panic(err)
+}
+
+func stringify(i *interpreter, args []any, t token) any {
+	return i.stringify(args[0])
 }
 
 func importFn(i *interpreter, args []any, t token) any {
