@@ -6,7 +6,7 @@ type callable interface {
 }
 
 type loxFunction struct {
-	environment *environment
+	closure     *environment
 	declaration *stmtFun
 }
 
@@ -30,10 +30,10 @@ func (f *loxFunction) call(i *interpreter, args []any, t token) (value any) {
 		}
 	}()
 	for i, param := range f.declaration.params {
-		f.environment.define(param.lexeme, args[i])
+		f.closure.define(param.lexeme, args[i])
 	}
 	block := f.declaration.body.(*stmtBlock)
-	i.executeBlock(block.statements, f.environment)
+	i.executeBlock(block.statements, newEnvironment(f.closure))
 	return
 }
 

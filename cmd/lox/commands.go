@@ -23,6 +23,7 @@ func Repl() {
 		stmts, parseErrors := i.parse()
 		if len(parseErrors) == 0 {
 			for _, stmt := range stmts {
+				i.resolver.resolveStmt(stmt)
 				switch stmt := stmt.(type) {
 				case *stmtExpr:
 					handleExpr(stmt.initializer, i)
@@ -93,11 +94,12 @@ func Evaluate(filePath string) bool {
 }
 
 func Run(filePath string) bool {
+	defer exitOnError()
 	str := GetFileContent(filePath)
 	dirPath := getPathFromFile(filePath)
 	i := newInterpreter(str, dirPath)
-	defer exitOnError()
 	stmts, errs := i.parse()
+	i.resolver.resolve(stmts)
 	if len(errs) == 0 {
 		i.interpret(stmts)
 		return true

@@ -6,9 +6,11 @@ import (
 )
 
 type interpreter struct {
+	resolver *resolver
 	*parser
 	*environment
 	globals *environment
+	locals  map[expression]int
 	index   string
 }
 
@@ -16,8 +18,12 @@ func newInterpreter(str string, index string) *interpreter {
 	glob := newEnvironment(nil)
 	env := newEnvironment(glob)
 	glob.values = globals()
+	locals := make(map[expression]int)
 	p := newParser(str)
-	return &interpreter{p, env, glob, index}
+	i := interpreter{nil, p, env, glob, locals, index}
+	r := newResolver(&i)
+	i.resolver = r
+	return &i
 }
 
 func (i *interpreter) evaluate(e expression) any {
@@ -33,6 +39,10 @@ func (i *interpreter) interpret(stmts []stmt) {
 	for _, s := range stmts {
 		i.execute(s)
 	}
+}
+
+func (i *interpreter) resolve(expr expression, depth int) {
+	i.locals[expr] = depth
 }
 
 func (i *interpreter) visitFunStmt(s *stmtFun) {
@@ -63,6 +73,7 @@ type returnValue struct {
 
 func (i *interpreter) visitReturnStmt(s *stmtReturn) {
 	if s.value == nil {
+		// TODO: handle return globally and in REPL expressions
 		panic(returnValue{nil})
 	}
 	panic(returnValue{i.evaluate(s.value)})
@@ -90,12 +101,26 @@ func (i *interpreter) visitExprStmt(s *stmtExpr) {
 }
 
 func (i *interpreter) visitVar(e *expressionVar) any {
-	return i.get(e.token())
+	return i.lookupVariable(e)
+}
+
+func (i *interpreter) lookupVariable(e expression) any {
+	distance, ok := i.locals[e]
+	if ok {
+		return i.getAt(distance, e.token())
+	}
+	return i.globals.get(e.token())
 }
 
 func (i *interpreter) visitAssignment(e *expressionAssignment) any {
-	i.assign(e.expr().token(), i.evaluate(e.next()))
-	return i.get(e.expr().token())
+	value := i.evaluate(e.next())
+	distance, ok := i.locals[e]
+	if ok {
+		i.assignAt(distance, e.expr().token(), value)
+	} else {
+		i.assign(e.expr().token(), value)
+	}
+	return value
 }
 
 func (i *interpreter) visitLogical(e *expressionLogical) any {

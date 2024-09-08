@@ -74,6 +74,7 @@ func importFn(i *interpreter, args []any, t token) any {
 		p := newParser(content)
 		p.parse()
 		if len(p.parseErrors) == 0 {
+			i.resolver.resolve(p.program)
 			i.interpret(p.program)
 		} else {
 			// TODO: clean up
