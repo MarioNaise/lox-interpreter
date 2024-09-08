@@ -13,7 +13,7 @@ const (
 
 type astPrinter struct{}
 
-func (a *astPrinter) print(stmts []stmtInterface) {
+func (a *astPrinter) print(stmts []stmt) {
 	for _, s := range stmts {
 		s.accept(a)
 	}

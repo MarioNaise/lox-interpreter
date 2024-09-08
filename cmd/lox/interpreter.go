@@ -24,12 +24,12 @@ func (i *interpreter) evaluate(e expression) any {
 	return e.accept(i)
 }
 
-func (i *interpreter) execute(s stmtInterface) {
+func (i *interpreter) execute(s stmt) {
 	defer i.syncOnError()
 	s.accept(i)
 }
 
-func (i *interpreter) interpret(stmts []stmtInterface) {
+func (i *interpreter) interpret(stmts []stmt) {
 	for _, s := range stmts {
 		i.execute(s)
 	}
@@ -78,7 +78,7 @@ func (i *interpreter) visitBlockStmt(s *stmtBlock) {
 	i.executeBlock(s.statements, newEnvironment(i.environment))
 }
 
-func (i *interpreter) executeBlock(stmts []stmtInterface, env *environment) {
+func (i *interpreter) executeBlock(stmts []stmt, env *environment) {
 	prevEnv := i.environment
 	defer func() { i.environment = prevEnv }()
 	i.environment = env

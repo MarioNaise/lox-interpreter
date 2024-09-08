@@ -33,7 +33,7 @@ func printErrors(errors []loxError) {
 	}
 }
 
-func handleStmt(stmt stmtInterface, i *interpreter) {
+func handleStmt(stmt stmt, i *interpreter) {
 	defer continueOnError()
 	i.execute(stmt)
 }

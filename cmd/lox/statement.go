@@ -1,11 +1,11 @@
 package lox
 
-type stmtInterface interface {
+type stmt interface {
 	accept(v stmtVisitor)
 }
 
 type stmtFun struct {
-	body   stmtInterface
+	body   stmt
 	name   token
 	params []token
 }
@@ -17,8 +17,8 @@ type stmtVar struct {
 
 type stmtIf struct {
 	condition  expression
-	thenBranch stmtInterface
-	elseBranch stmtInterface
+	thenBranch stmt
+	elseBranch stmt
 }
 
 type stmtReturn struct {
@@ -27,11 +27,11 @@ type stmtReturn struct {
 
 type stmtWhile struct {
 	condition expression
-	body      stmtInterface
+	body      stmt
 }
 
 type stmtBlock struct {
-	statements []stmtInterface
+	statements []stmt
 }
 
 type stmtExpr struct {

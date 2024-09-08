@@ -7,7 +7,7 @@ import (
 
 type parser struct {
 	*scanner
-	program     []stmtInterface
+	program     []stmt
 	parseErrors []loxError
 	current     int
 }
@@ -16,7 +16,7 @@ func newParser(str string) *parser {
 	return &parser{scanner: newScanner(str)}
 }
 
-func (p *parser) parse() ([]stmtInterface, []loxError) {
+func (p *parser) parse() ([]stmt, []loxError) {
 	p.tokenize()
 	for !p.isAtEnd() {
 		p.program = append(p.program, p.declaration())
@@ -28,7 +28,7 @@ func (p *parser) expression() expression {
 	return p.assignment()
 }
 
-func (p *parser) declaration() stmtInterface {
+func (p *parser) declaration() stmt {
 	if p.match(FUN) {
 		return p.function("function")
 	}
@@ -38,7 +38,7 @@ func (p *parser) declaration() stmtInterface {
 	return p.statement()
 }
 
-func (p *parser) function(kind string) stmtInterface {
+func (p *parser) function(kind string) stmt {
 	name := p.consume(IDENTIFIER, "Expected "+kind+" name.")
 	p.consume(LEFT_PAREN, "Expected '(' after "+kind+" name.")
 	params := []token{}
@@ -60,7 +60,7 @@ func (p *parser) function(kind string) stmtInterface {
 	return &stmtFun{body, name, params}
 }
 
-func (p *parser) varDeclaration() stmtInterface {
+func (p *parser) varDeclaration() stmt {
 	name := p.consume(IDENTIFIER, "Expected variable name.")
 	var initializer expression
 	if p.match(EQUAL) {
@@ -70,7 +70,7 @@ func (p *parser) varDeclaration() stmtInterface {
 	return &stmtVar{initializer, name}
 }
 
-func (p *parser) statement() stmtInterface {
+func (p *parser) statement() stmt {
 	if p.match(FOR) {
 		return p.forStmt()
 	}
@@ -91,9 +91,9 @@ func (p *parser) statement() stmtInterface {
 	return &stmtExpr{expr}
 }
 
-func (p *parser) forStmt() stmtInterface {
+func (p *parser) forStmt() stmt {
 	p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
-	var initializer stmtInterface
+	var initializer stmt
 	if p.match(SEMICOLON) {
 		initializer = nil
 	} else if p.match(VAR) {
@@ -113,7 +113,7 @@ func (p *parser) forStmt() stmtInterface {
 	p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
 	body := p.statement()
 	if increment != nil {
-		body = &stmtBlock{[]stmtInterface{body, &stmtExpr{increment}}}
+		body = &stmtBlock{[]stmt{body, &stmtExpr{increment}}}
 	}
 	if condition == nil {
 		exprTrue := &exp{nil, nil, token{TRUE, "true", "true", p.peek().line}}
@@ -121,24 +121,24 @@ func (p *parser) forStmt() stmtInterface {
 	}
 	body = &stmtWhile{condition, body}
 	if initializer != nil {
-		body = &stmtBlock{[]stmtInterface{initializer, body}}
+		body = &stmtBlock{[]stmt{initializer, body}}
 	}
 	return body
 }
 
-func (p *parser) ifStmt() stmtInterface {
+func (p *parser) ifStmt() stmt {
 	p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
 	condition := p.expression()
 	p.consume(RIGHT_PAREN, "Expect ')' after if condition.")
 	thenBranch := p.statement()
-	var elseBranch stmtInterface
+	var elseBranch stmt
 	if p.match(ELSE) {
 		elseBranch = p.statement()
 	}
 	return &stmtIf{condition, thenBranch, elseBranch}
 }
 
-func (p *parser) returnStmt() stmtInterface {
+func (p *parser) returnStmt() stmt {
 	var val expression
 	if !p.check(SEMICOLON) {
 		val = p.expression()
@@ -147,7 +147,7 @@ func (p *parser) returnStmt() stmtInterface {
 	return &stmtReturn{val}
 }
 
-func (p *parser) whileStmt() stmtInterface {
+func (p *parser) whileStmt() stmt {
 	p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
 	condition := p.expression()
 	p.consume(RIGHT_PAREN, "Expect ')' after condition.")
@@ -155,8 +155,8 @@ func (p *parser) whileStmt() stmtInterface {
 	return &stmtWhile{condition, body}
 }
 
-func (p *parser) blockStmt() stmtInterface {
-	stmts := []stmtInterface{}
+func (p *parser) blockStmt() stmt {
+	stmts := []stmt{}
 	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
 		stmts = append(stmts, p.declaration())
 	}
