@@ -41,9 +41,11 @@ func sleep(_ *interpreter, args []any, t token) any {
 	length, ok := args[0].(float64)
 	if ok {
 		time.Sleep(time.Duration(length) * time.Millisecond)
+	} else {
+		err := newError("sleep - Argument must be a number.", t.line)
+		panic(err)
 	}
-	err := newError("sleep - Argument must be a number.", t.line)
-	panic(err)
+	return nil
 }
 
 func stringify(i *interpreter, args []any, t token) any {
