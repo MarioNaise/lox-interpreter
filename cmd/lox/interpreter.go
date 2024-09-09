@@ -9,18 +9,16 @@ type interpreter struct {
 	resolver *resolver
 	*parser
 	*environment
-	globals *environment
-	locals  map[expression]int
-	index   string
+	locals map[expression]int
+	index  string
 }
 
 func newInterpreter(str string, index string) *interpreter {
 	glob := newEnvironment(nil)
-	env := newEnvironment(glob)
 	glob.values = globals()
 	locals := make(map[expression]int)
 	p := newParser(str)
-	i := interpreter{nil, p, env, glob, locals, index}
+	i := interpreter{nil, p, glob, locals, index}
 	r := newResolver(&i)
 	i.resolver = r
 	return &i
@@ -109,7 +107,7 @@ func (i *interpreter) lookupVariable(e expression) any {
 	if ok {
 		return i.getAt(distance, e.token())
 	}
-	return i.globals.get(e.token())
+	return i.get(e.token())
 }
 
 func (i *interpreter) visitAssignment(e *expressionAssignment) any {
