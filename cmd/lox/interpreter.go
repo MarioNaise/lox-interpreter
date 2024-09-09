@@ -6,7 +6,7 @@ import (
 )
 
 type interpreter struct {
-	resolver *resolver
+	*resolver
 	*parser
 	*environment
 	locals map[expression]int
@@ -19,8 +19,7 @@ func newInterpreter(str string, index string) *interpreter {
 	locals := make(map[expression]int)
 	p := newParser(str)
 	i := interpreter{nil, p, glob, locals, index}
-	r := newResolver(&i)
-	i.resolver = r
+	i.resolver = newResolver(&i)
 	return &i
 }
 
@@ -45,7 +44,7 @@ func (i *interpreter) resolve(expr expression, depth int) {
 
 func (i *interpreter) visitFunStmt(s *stmtFun) {
 	function := &loxFunction{newEnvironment(i.environment), s}
-	i.define(s.name.lexeme, function)
+	i.environment.define(s.name.lexeme, function)
 }
 
 func (i *interpreter) visitVarStmt(s *stmtVar) {
@@ -54,7 +53,7 @@ func (i *interpreter) visitVarStmt(s *stmtVar) {
 	if s.initializer != nil {
 		val = i.evaluate(s.initializer)
 	}
-	i.define(name, val)
+	i.environment.define(name, val)
 }
 
 func (i *interpreter) visitIfStmt(s *stmtIf) {

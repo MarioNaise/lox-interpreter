@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func GetFileContent(fileName string) string {
+func getFileContent(fileName string) string {
 	fileContents, err := os.ReadFile(fileName)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

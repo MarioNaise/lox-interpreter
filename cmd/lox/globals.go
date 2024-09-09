@@ -56,6 +56,7 @@ func load(i *interpreter, args []any, t token) any {
 	if filePath, ok := args[0].(string); ok {
 		prevIndex := i.index
 		defer func() {
+			i.index = prevIndex
 			if r := recover(); r != nil {
 				switch r := r.(type) {
 				case returnValue:
@@ -69,13 +70,13 @@ func load(i *interpreter, args []any, t token) any {
 					panic(r)
 				}
 			}
-			i.index = prevIndex
 		}()
 		i.index = i.index + getPathFromFile(filePath)
-		content := getFileContent(joinBaseAndFilePath(i.index, filePath), t)
+		content := getFileContentLoad(joinBaseAndFilePath(i.index, filePath), t)
 		p := newParser(content)
 		p.parse()
 		if len(p.parseErrors) == 0 {
+			// TODO: resolve before interpreting in calling file
 			i.resolver.resolve(p.program)
 			i.interpret(p.program)
 		} else {
@@ -90,7 +91,7 @@ func load(i *interpreter, args []any, t token) any {
 	return nil
 }
 
-func getFileContent(fileName string, t token) string {
+func getFileContentLoad(fileName string, t token) string {
 	fileContents, err := os.ReadFile(fileName)
 	if err != nil {
 		err := newError("Could not read file "+fileName, t.line)

@@ -23,7 +23,7 @@ func Repl() {
 		stmts, parseErrors := i.parse()
 		if len(parseErrors) == 0 {
 			for _, stmt := range stmts {
-				i.resolver.resolveStmt(stmt)
+				i.resolveStmt(stmt)
 				switch stmt := stmt.(type) {
 				case *stmtExpr:
 					handleExpr(stmt.initializer, i)
@@ -44,7 +44,7 @@ func replError(err string) string {
 }
 
 func Tokenize(filePath string) bool {
-	str := GetFileContent(filePath)
+	str := getFileContent(filePath)
 	s := newScanner(str)
 	tokens, errs := s.tokenize()
 	for _, token := range tokens {
@@ -55,7 +55,7 @@ func Tokenize(filePath string) bool {
 }
 
 func Parse(filePath string) bool {
-	str := GetFileContent(filePath)
+	str := getFileContent(filePath)
 	p := newParser(str)
 	stmts, errs := p.parse()
 	aP := astPrinter{}
@@ -76,7 +76,7 @@ func Parse(filePath string) bool {
 
 func Evaluate(filePath string) bool {
 	defer exitOnError()
-	str := GetFileContent(filePath)
+	str := getFileContent(filePath)
 	dirPath := getPathFromFile(filePath)
 	i := newInterpreter(str, dirPath)
 	i.tokenize()
@@ -95,7 +95,7 @@ func Evaluate(filePath string) bool {
 
 func Run(filePath string) bool {
 	defer exitOnError()
-	str := GetFileContent(filePath)
+	str := getFileContent(filePath)
 	dirPath := getPathFromFile(filePath)
 	i := newInterpreter(str, dirPath)
 	stmts, errs := i.parse()

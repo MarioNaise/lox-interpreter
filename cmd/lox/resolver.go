@@ -11,8 +11,6 @@ type resolver struct {
 
 func newResolver(i *interpreter) *resolver {
 	r := resolver{i, list.New()}
-	r.scopes.PushBack(map[string]bool{})
-	i.resolver = &r
 	return &r
 }
 
