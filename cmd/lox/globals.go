@@ -5,18 +5,20 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+	"strconv"
 	"time"
 )
 
 func globals() map[string]any {
 	return map[string]any{
-		"read":   &builtin{function: readLn},
-		"clock":  &builtin{function: getTime},
-		"print":  &builtin{function: printLn, lenArgs: 1},
-		"random": &builtin{function: random, lenArgs: 1},
-		"sleep":  &builtin{function: sleep, lenArgs: 1},
-		"string": &builtin{function: stringify, lenArgs: 1},
-		"load":   &builtin{function: load, lenArgs: 1},
+		"read":     &builtin{function: readLn},
+		"clock":    &builtin{function: getTime},
+		"print":    &builtin{function: printLn, lenArgs: 1},
+		"random":   &builtin{function: random, lenArgs: 1},
+		"sleep":    &builtin{function: sleep, lenArgs: 1},
+		"string":   &builtin{function: stringify, lenArgs: 1},
+		"parseNum": &builtin{function: parseNum, lenArgs: 1},
+		"load":     &builtin{function: load, lenArgs: 1},
 	}
 }
 
@@ -50,6 +52,20 @@ func sleep(_ *interpreter, args []any, t token) any {
 
 func stringify(i *interpreter, args []any, t token) any {
 	return i.stringify(args[0])
+}
+
+func parseNum(i *interpreter, args []any, t token) any {
+	str, ok := args[0].(string)
+	if !ok {
+		err := newError("parseNum - Argument must be a string.", t.line)
+		panic(err)
+	}
+	num, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		err := newError("parseNum - Number couldn't be parsed.", t.line)
+		panic(err)
+	}
+	return num
 }
 
 func load(i *interpreter, args []any, t token) any {
