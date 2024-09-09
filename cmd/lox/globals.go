@@ -16,7 +16,7 @@ func globals() map[string]any {
 		"random": &builtin{function: random, lenArgs: 1},
 		"sleep":  &builtin{function: sleep, lenArgs: 1},
 		"string": &builtin{function: stringify, lenArgs: 1},
-		"import": &builtin{function: importFn, lenArgs: 1},
+		"load":   &builtin{function: load, lenArgs: 1},
 	}
 }
 
@@ -52,7 +52,7 @@ func stringify(i *interpreter, args []any, t token) any {
 	return i.stringify(args[0])
 }
 
-func importFn(i *interpreter, args []any, t token) any {
+func load(i *interpreter, args []any, t token) any {
 	if filePath, ok := args[0].(string); ok {
 		prevIndex := i.index
 		defer func() {
