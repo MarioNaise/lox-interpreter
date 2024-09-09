@@ -166,8 +166,8 @@ func (i *interpreter) visitComparison(e *expressionComparison) any {
 func (i *interpreter) visitTerm(e *expressionTerm) any {
 	switch e.tokenType() {
 	case PLUS:
-		if i.evaluatesToString(e) {
-			return fmt.Sprintf("%v%v", i.evaluate(e.expr()), i.evaluate(e.next()))
+		if ok, left, right := i.evaluatesToString(e); ok {
+			return fmt.Sprintf("%v%v", left, right)
 		}
 		left := i.parseFloat(e.expr())
 		right := i.parseFloat(e.next())
@@ -234,12 +234,17 @@ func (i *interpreter) visitExpr(e *exp) any {
 	return ""
 }
 
-func (i *interpreter) evaluatesToString(e expression) bool {
-	if e.expr() == nil || e.next() == nil {
-		return e.tokenType() == STRING
+func (i *interpreter) evaluatesToString(e expression) (bool, any, any) {
+	left := i.evaluate(e.expr())
+	right := i.evaluate(e.next())
+	if left == nil {
+		left = "nil"
 	}
-	return reflect.TypeOf(i.evaluate(e.expr())).Name() == "string" &&
-		reflect.TypeOf(i.evaluate(e.next())).Name() == "string"
+	if right == nil {
+		right = "nil"
+	}
+	return reflect.TypeOf(left).Name() == "string" &&
+		reflect.TypeOf(right).Name() == "string", left, right
 }
 
 func (i *interpreter) parseFloat(e expression) float64 {
