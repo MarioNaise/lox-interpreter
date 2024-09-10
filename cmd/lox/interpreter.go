@@ -209,6 +209,16 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 	}
 }
 
+func (i *interpreter) visitGet(expr *expressionGet) any {
+	object := i.evaluate(expr.expression)
+	instance, ok := object.(*loxInstance)
+	if !ok {
+		err := newError("Only instances have properties.", expr.token().line)
+		panic(err)
+	}
+	return instance.get(expr.name)
+}
+
 func (i *interpreter) visitCall(e *expressionCall) any {
 	defer recoverLoxError(e.token())
 	callee := i.evaluate(e.expression)

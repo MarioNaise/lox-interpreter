@@ -1,5 +1,7 @@
 package lox
 
+import "fmt"
+
 type callable interface {
 	arity() int
 	call(*interpreter, []any, token) any
@@ -10,7 +12,8 @@ type loxClass struct {
 }
 
 type loxInstance struct {
-	class *loxClass
+	class  *loxClass
+	fields map[string]any
 }
 
 type loxFunction struct {
@@ -26,11 +29,19 @@ type builtin struct {
 func (c *loxClass) String() string { return "<class " + c.name + ">" }
 func (c *loxClass) arity() int     { return 0 }
 func (c *loxClass) call(i *interpreter, args []any, t token) any {
-	instance := &loxInstance{c}
+	instance := &loxInstance{c, make(map[string]any)}
 	return instance
 }
 
 func (c *loxInstance) String() string { return c.class.name + " instance" }
+func (c *loxInstance) get(name token) any {
+	val, ok := c.fields[name.lexeme]
+	if ok {
+		return val
+	}
+	err := newError(fmt.Sprintf("Undefined property '%s'.", name.lexeme), name.line)
+	panic(err)
+}
 
 func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexeme + ">" }
 func (f *loxFunction) arity() int     { return len(f.declaration.params) }

@@ -285,6 +285,9 @@ func (p *parser) call() expression {
 	for {
 		if p.match(LEFT_PAREN) {
 			expr = p.finishCall(expr)
+		} else if p.match(DOT) {
+			name := p.consume(IDENTIFIER, "Expect property name after '.'.")
+			expr = &expressionGet{expr, name}
 		} else {
 			break
 		}

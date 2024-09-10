@@ -9,6 +9,7 @@ type expressionVisitor interface {
 	visitTerm(expr *expressionTerm) any
 	visitFactor(expr *expressionFactor) any
 	visitUnary(expr *expressionUnary) any
+	visitGet(expr *expressionGet) any
 	visitCall(expr *expressionCall) any
 	visitLiteral(expr *expressionLiteral) any
 	visitGroup(expr *expressionGroup) any

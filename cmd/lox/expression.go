@@ -42,6 +42,11 @@ type expressionUnary struct {
 	expression
 }
 
+type expressionGet struct {
+	expression
+	name token
+}
+
 type expressionCall struct {
 	expression
 	args []expression
@@ -88,6 +93,10 @@ func (e *expressionTerm) accept(v expressionVisitor) any {
 
 func (e *expressionFactor) accept(v expressionVisitor) any {
 	return v.visitFactor(e)
+}
+
+func (e *expressionGet) accept(v expressionVisitor) any {
+	return v.visitGet(e)
 }
 
 func (e *expressionCall) accept(v expressionVisitor) any {

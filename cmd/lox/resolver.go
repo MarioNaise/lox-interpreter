@@ -195,6 +195,11 @@ func (r *resolver) visitUnary(expr *expressionUnary) any {
 	return nil
 }
 
+func (r *resolver) visitGet(expr *expressionGet) any {
+	r.resolveExpr(expr.expression)
+	return nil
+}
+
 func (r *resolver) visitCall(expr *expressionCall) any {
 	r.resolveExpr(expr.expression)
 	for _, arg := range expr.args {

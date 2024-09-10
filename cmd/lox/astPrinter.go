@@ -114,8 +114,13 @@ func (a *astPrinter) visitUnary(e *expressionUnary) any {
 	return a.parenthesized(e.lexeme(), e.next())
 }
 
+func (a *astPrinter) visitGet(e *expressionGet) any {
+	return fmt.Sprintf("(%v.%v)", e.lexeme(), e.name.lexeme)
+}
+
 func (a *astPrinter) visitCall(e *expressionCall) any {
-	return a.parenthesized(e.lexeme(), e.args...)
+	argStr := a.joinExprs(e.args)
+	return fmt.Sprintf("(%s [%s])", e.lexeme(), argStr)
 }
 
 func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
@@ -136,15 +141,19 @@ func (a *astPrinter) primary(e expression) any {
 }
 
 func (a *astPrinter) parenthesized(name string, e ...expression) string {
+	joined := a.joinExprs(e)
+	return fmt.Sprintf("(%s %s)", name, joined)
+}
+
+func (a *astPrinter) joinExprs(e []expression) string {
 	s := []string{}
-	s = append(s, name)
 	for _, expr := range e {
 		if expr != nil {
-			s = append(s, fmt.Sprintf("%v", expr.accept(a)))
+			s = append(s, expr.accept(a).(string))
 		}
 	}
-	str := strings.Join(s, " ")
-	return strings.Join([]string{"(", str, ")"}, "")
+	joined := strings.Join(s, " ")
+	return joined
 }
 
 func (a *astPrinter) defaultString(e expression) string {
