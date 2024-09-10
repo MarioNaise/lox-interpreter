@@ -9,6 +9,10 @@ type loxClass struct {
 	name string
 }
 
+type loxInstance struct {
+	class *loxClass
+}
+
 type loxFunction struct {
 	closure     *environment
 	declaration *stmtFun
@@ -20,6 +24,13 @@ type builtin struct {
 }
 
 func (c *loxClass) String() string { return "<class " + c.name + ">" }
+func (c *loxClass) arity() int     { return 0 }
+func (c *loxClass) call(i *interpreter, args []any, t token) any {
+	instance := &loxInstance{c}
+	return instance
+}
+
+func (c *loxInstance) String() string { return c.class.name + " instance" }
 
 func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexeme + ">" }
 func (f *loxFunction) arity() int     { return len(f.declaration.params) }
