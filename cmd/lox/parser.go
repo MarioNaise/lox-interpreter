@@ -144,7 +144,7 @@ func (p *parser) returnStmt() stmt {
 		val = p.expression()
 	}
 	p.consume(SEMICOLON, "Expected ';' after return value.")
-	return &stmtReturn{val}
+	return &stmtReturn{val, p.previous()}
 }
 
 func (p *parser) whileStmt() stmt {

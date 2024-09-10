@@ -2,15 +2,24 @@ package lox
 
 import (
 	"container/list"
+	"fmt"
+)
+
+type fnType int
+
+const (
+	none fnType = iota
+	function
 )
 
 type resolver struct {
 	interpreter *interpreter
 	scopes      *list.List
+	currentFun  fnType
 }
 
 func newResolver(i *interpreter) *resolver {
-	r := resolver{i, list.New()}
+	r := resolver{i, list.New(), none}
 	return &r
 }
 
@@ -39,6 +48,9 @@ func (r *resolver) visitFunStmt(stmt *stmtFun) {
 }
 
 func (r *resolver) resolveFunction(stmt *stmtFun) {
+	enclosingFn := r.currentFun
+	defer func() { r.currentFun = enclosingFn }()
+	r.currentFun = function
 	r.beginScope()
 	for _, param := range stmt.params {
 		r.declare(param)
@@ -61,6 +73,10 @@ func (r *resolver) declare(name token) {
 		return
 	}
 	scope := r.scopes.Back().Value.(map[string]bool)
+	if _, ok := scope[name.lexeme]; ok {
+		err := newError(fmt.Sprintf("Identifier '%s' already declared in this scope.", name.lexeme), name.line)
+		panic(err)
+	}
 	scope[name.lexeme] = false
 }
 
@@ -81,6 +97,10 @@ func (r *resolver) visitIfStmt(stmt *stmtIf) {
 }
 
 func (r *resolver) visitReturnStmt(stmt *stmtReturn) {
+	if r.currentFun == none {
+		err := newError("Can't return from top-level code.", stmt.line)
+		panic(err)
+	}
 	if stmt.value != nil {
 		r.resolveExpr(stmt.value)
 	}
@@ -113,7 +133,7 @@ func (r *resolver) visitVar(expr *expressionVar) any {
 	if r.scopes.Len() > 0 {
 		hasValue, ok := r.scopes.Back().Value.(map[string]bool)[expr.lexeme()]
 		if r.scopes.Len() > 0 && ok && !hasValue {
-			err := newError("Can't read local variable in its own initializer.", expr.token().line)
+			err := newError(fmt.Sprintf("Can't access '%s' in its own initializer.", expr.lexeme()), expr.token().line)
 			panic(err)
 		}
 	}

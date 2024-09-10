@@ -23,7 +23,6 @@ func Repl() {
 		stmts, parseErrors := i.parse()
 		if len(parseErrors) == 0 {
 			for _, stmt := range stmts {
-				i.resolveStmt(stmt)
 				switch stmt := stmt.(type) {
 				case *stmtExpr:
 					handleExpr(stmt.initializer, i)

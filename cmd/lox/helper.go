@@ -35,11 +35,13 @@ func printErrors(errors []loxError) {
 
 func handleStmt(stmt stmt, i *interpreter) {
 	defer continueOnError()
+	i.resolveStmt(stmt)
 	i.execute(stmt)
 }
 
 func handleExpr(exp expression, i *interpreter) {
 	defer continueOnError()
+	i.resolveExpr(exp)
 	fmt.Println(i.stringify(i.evaluate(exp)))
 }
 

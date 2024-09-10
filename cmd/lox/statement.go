@@ -23,6 +23,7 @@ type stmtIf struct {
 
 type stmtReturn struct {
 	value expression
+	token
 }
 
 type stmtWhile struct {
