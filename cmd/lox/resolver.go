@@ -41,6 +41,11 @@ func (r *resolver) resolveExpr(e expression) {
 	}
 }
 
+func (r *resolver) visitClassStmt(stmt *stmtClass) {
+	r.declare(stmt.name)
+	r.define(stmt.name)
+}
+
 func (r *resolver) visitFunStmt(stmt *stmtFun) {
 	r.declare(stmt.name)
 	r.define(stmt.name)

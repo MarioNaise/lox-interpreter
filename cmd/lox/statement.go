@@ -4,9 +4,14 @@ type stmt interface {
 	accept(v stmtVisitor)
 }
 
+type stmtClass struct {
+	name    token
+	methods []stmtFun
+}
+
 type stmtFun struct {
-	body   stmt
 	name   token
+	body   stmt
 	params []token
 }
 
@@ -37,6 +42,10 @@ type stmtBlock struct {
 
 type stmtExpr struct {
 	initializer expression
+}
+
+func (s *stmtClass) accept(v stmtVisitor) {
+	v.visitClassStmt(s)
 }
 
 func (s *stmtFun) accept(v stmtVisitor) {

@@ -26,6 +26,14 @@ func (a *astPrinter) printExpr(e expression) {
 	fmt.Println(e.accept(a))
 }
 
+func (a *astPrinter) visitClassStmt(stmt *stmtClass) {
+	fmt.Println(CLASS + ":" + stmt.name.lexeme)
+	for _, method := range stmt.methods {
+		method.accept(a)
+	}
+	fmt.Println(CLASS + "_END")
+}
+
 func (a *astPrinter) visitFunStmt(s *stmtFun) {
 	a.prefix(fmt.Sprintf("%s:%s", FUN, s.name.lexeme))
 	p := []string{}
@@ -37,8 +45,7 @@ func (a *astPrinter) visitFunStmt(s *stmtFun) {
 }
 
 func (a *astPrinter) visitVarStmt(s *stmtVar) {
-	a.prefix(VAR)
-	a.prefix(s.initializer.lexeme())
+	a.prefix(VAR + ":" + s.name.lexeme)
 	a.printExpr(s.initializer)
 }
 
@@ -76,7 +83,7 @@ func (a *astPrinter) visitExprStmt(s *stmtExpr) {
 }
 
 func (a *astPrinter) visitVar(e *expressionVar) any {
-	return fmt.Sprintf("%s:%s", VAR, e.lexeme())
+	return fmt.Sprintf("%s %s", VAR, e.lexeme())
 }
 
 func (a *astPrinter) visitAssignment(e *expressionAssignment) any {

@@ -5,6 +5,10 @@ type callable interface {
 	call(*interpreter, []any, token) any
 }
 
+type loxClass struct {
+	name string
+}
+
 type loxFunction struct {
 	closure     *environment
 	declaration *stmtFun
@@ -14,6 +18,8 @@ type builtin struct {
 	function func(*interpreter, []any, token) any
 	lenArgs  int
 }
+
+func (c *loxClass) String() string { return "<class " + c.name + ">" }
 
 func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexeme + ">" }
 func (f *loxFunction) arity() int     { return len(f.declaration.params) }

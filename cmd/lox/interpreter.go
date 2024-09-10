@@ -42,6 +42,12 @@ func (i *interpreter) resolve(expr expression, depth int) {
 	i.locals[expr] = depth
 }
 
+func (i *interpreter) visitClassStmt(stmt *stmtClass) {
+	i.environment.define(stmt.name.lexeme, nil)
+	class := &loxClass{stmt.name.lexeme}
+	i.assign(stmt.name, class)
+}
+
 func (i *interpreter) visitFunStmt(s *stmtFun) {
 	function := &loxFunction{newEnvironment(i.environment), s}
 	i.environment.define(s.name.lexeme, function)

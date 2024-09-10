@@ -1,6 +1,7 @@
 package lox
 
 type stmtVisitor interface {
+	visitClassStmt(stmt *stmtClass)
 	visitFunStmt(stmt *stmtFun)
 	visitVarStmt(stmt *stmtVar)
 	visitIfStmt(stmt *stmtIf)
