@@ -18,6 +18,12 @@ type expressionAssignment struct {
 	expression
 }
 
+type expressionSet struct {
+	expression
+	value expression
+	name  token
+}
+
 type expressionLogical struct {
 	expression
 }
@@ -97,6 +103,10 @@ func (e *expressionFactor) accept(v expressionVisitor) any {
 
 func (e *expressionGet) accept(v expressionVisitor) any {
 	return v.visitGet(e)
+}
+
+func (e *expressionSet) accept(v expressionVisitor) any {
+	return v.visitSet(e)
 }
 
 func (e *expressionCall) accept(v expressionVisitor) any {

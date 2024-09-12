@@ -90,6 +90,10 @@ func (a *astPrinter) visitAssignment(e *expressionAssignment) any {
 	return fmt.Sprintf("%s:%s %v", VAR, e.expr().lexeme(), e.next().accept(a))
 }
 
+func (a *astPrinter) visitSet(e *expressionSet) any {
+	return fmt.Sprintf("%v.%v: %v", e.expression.accept(a), e.name.lexeme, e.value.accept(a))
+}
+
 func (a *astPrinter) visitLogical(e *expressionLogical) any {
 	return a.parenthesized(strings.ToUpper(e.lexeme()), e.expr(), e.next())
 }
@@ -115,7 +119,7 @@ func (a *astPrinter) visitUnary(e *expressionUnary) any {
 }
 
 func (a *astPrinter) visitGet(e *expressionGet) any {
-	return fmt.Sprintf("(%v.%v)", e.lexeme(), e.name.lexeme)
+	return fmt.Sprintf("%v.%v", e.expression.accept(a), e.name.lexeme)
 }
 
 func (a *astPrinter) visitCall(e *expressionCall) any {

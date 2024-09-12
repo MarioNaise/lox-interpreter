@@ -126,6 +126,18 @@ func (i *interpreter) visitAssignment(e *expressionAssignment) any {
 	return value
 }
 
+func (i *interpreter) visitSet(expr *expressionSet) any {
+	object := i.evaluate(expr.expression)
+	instance, ok := object.(*loxInstance)
+	if !ok {
+		err := newError("Only instances have fields.", expr.token().line)
+		panic(err)
+	}
+	val := i.evaluate(expr.value)
+	instance.set(expr.name, val)
+	return val
+}
+
 func (i *interpreter) visitLogical(e *expressionLogical) any {
 	if e.tokenType() == OR {
 		if i.isTruthy(e.expr()) {

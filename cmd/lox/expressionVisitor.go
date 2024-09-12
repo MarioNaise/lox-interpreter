@@ -3,6 +3,7 @@ package lox
 type expressionVisitor interface {
 	visitVar(expr *expressionVar) any
 	visitAssignment(expr *expressionAssignment) any
+	visitSet(expr *expressionSet) any
 	visitLogical(expr *expressionLogical) any
 	visitEquality(expr *expressionEquality) any
 	visitComparison(expr *expressionComparison) any

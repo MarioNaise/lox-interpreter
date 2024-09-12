@@ -187,6 +187,8 @@ func (p *parser) assignment() expression {
 		case *expressionVar:
 			exp := &exp{expr, value, operator}
 			return &expressionAssignment{exp}
+		case *expressionGet:
+			return &expressionSet{expr.expression, value, expr.name}
 		}
 		err := newError("Invalid assignment target.", p.peek().line)
 		p.parseErrors = append(p.parseErrors, err)

@@ -170,6 +170,12 @@ func (r *resolver) visitAssignment(expr *expressionAssignment) any {
 	return nil
 }
 
+func (r *resolver) visitSet(expr *expressionSet) any {
+	r.resolveExpr(expr.expression)
+	r.resolveExpr(expr.value)
+	return nil
+}
+
 func (r *resolver) visitLogical(expr *expressionLogical) any {
 	return r.defaultResolver(expr)
 }

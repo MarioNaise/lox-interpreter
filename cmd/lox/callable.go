@@ -43,6 +43,10 @@ func (c *loxInstance) get(name token) any {
 	panic(err)
 }
 
+func (c *loxInstance) set(name token, value any) {
+	c.fields[name.lexeme] = value
+}
+
 func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexeme + ">" }
 func (f *loxFunction) arity() int     { return len(f.declaration.params) }
 func (f *loxFunction) call(i *interpreter, args []any, t token) (value any) {
