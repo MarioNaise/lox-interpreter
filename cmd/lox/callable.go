@@ -8,7 +8,8 @@ type callable interface {
 }
 
 type loxClass struct {
-	name string
+	methods map[string]*loxFunction
+	name    string
 }
 
 type loxInstance struct {
@@ -33,18 +34,30 @@ func (c *loxClass) call(i *interpreter, args []any, t token) any {
 	return instance
 }
 
-func (c *loxInstance) String() string { return c.class.name + " instance" }
-func (c *loxInstance) get(name token) any {
-	val, ok := c.fields[name.lexeme]
+func (i *loxInstance) String() string { return i.class.name + " instance" }
+func (i *loxInstance) get(name token) any {
+	val, ok := i.fields[name.lexeme]
 	if ok {
 		return val
+	}
+	m := i.findMethod(name.lexeme)
+	if m != nil {
+		return m
 	}
 	err := newError(fmt.Sprintf("Undefined property '%s'.", name.lexeme), name.line)
 	panic(err)
 }
 
-func (c *loxInstance) set(name token, value any) {
-	c.fields[name.lexeme] = value
+func (i *loxInstance) findMethod(name string) *loxFunction {
+	method, ok := i.class.methods[name]
+	if ok {
+		return method
+	}
+	return nil
+}
+
+func (i *loxInstance) set(name token, value any) {
+	i.fields[name.lexeme] = value
 }
 
 func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexeme + ">" }

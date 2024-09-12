@@ -6,7 +6,7 @@ type stmt interface {
 
 type stmtClass struct {
 	name    token
-	methods []stmtFun
+	methods []*stmtFun
 }
 
 type stmtFun struct {

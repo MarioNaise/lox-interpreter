@@ -44,7 +44,12 @@ func (i *interpreter) resolve(expr expression, depth int) {
 
 func (i *interpreter) visitClassStmt(stmt *stmtClass) {
 	i.environment.define(stmt.name.lexeme, nil)
-	class := &loxClass{stmt.name.lexeme}
+	methods := make(map[string]*loxFunction)
+	for _, m := range stmt.methods {
+		fun := &loxFunction{newEnvironment(i.environment), m}
+		methods[m.name.lexeme] = fun
+	}
+	class := &loxClass{methods, stmt.name.lexeme}
 	i.assign(stmt.name, class)
 }
 

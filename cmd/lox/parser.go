@@ -43,10 +43,10 @@ func (p *parser) declaration() stmt {
 
 func (p *parser) classDeclaration() stmt {
 	name := p.consume(IDENTIFIER, "Expected class name.")
-	var methods []stmtFun
+	var methods []*stmtFun
 	p.consume(LEFT_BRACE, "Expected '{' before class body.")
 	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
-		methods = append(methods, *p.function("method").(*stmtFun))
+		methods = append(methods, p.function("method").(*stmtFun))
 	}
 	p.consume(RIGHT_BRACE, "Expected '}' after class body.")
 	return &stmtClass{name, methods}

@@ -10,6 +10,7 @@ type fnType int
 const (
 	none fnType = iota
 	function
+	method
 )
 
 type resolver struct {
@@ -44,18 +45,21 @@ func (r *resolver) resolveExpr(e expression) {
 func (r *resolver) visitClassStmt(stmt *stmtClass) {
 	r.declare(stmt.name)
 	r.define(stmt.name)
+	for _, m := range stmt.methods {
+		r.resolveFunction(method, m)
+	}
 }
 
 func (r *resolver) visitFunStmt(stmt *stmtFun) {
 	r.declare(stmt.name)
 	r.define(stmt.name)
-	r.resolveFunction(stmt)
+	r.resolveFunction(function, stmt)
 }
 
-func (r *resolver) resolveFunction(stmt *stmtFun) {
+func (r *resolver) resolveFunction(t fnType, stmt *stmtFun) {
 	enclosingFn := r.currentFun
 	defer func() { r.currentFun = enclosingFn }()
-	r.currentFun = function
+	r.currentFun = t
 	r.beginScope()
 	for _, param := range stmt.params {
 		r.declare(param)
