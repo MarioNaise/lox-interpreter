@@ -51,6 +51,24 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   }
   ```
 
+- **Classes**:
+
+  - Define classes using the `class` keyword.
+
+  ```lox
+  class Person() {
+      say("Hello!");
+  }
+  ```
+
+  - Create instances by calling the class.
+
+  ```lox
+  var person = Person();
+
+  person.say(); // Hello!
+  ```
+
 ## Built-in Features
 
 - **Types**: strings, numbers, booleans, and `nil`.
@@ -63,6 +81,7 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   - `random(num)`: Creates a random number between 0 and num (num not included).
   - `sleep(milliseconds)`: Pauses execution for the specified duration.
   - `string(value)`: Stringifies the value.
+  - `parseNum(string)`: Parses a string to a number.
   - `load(filePath)`: You can load any lox file. Think of loading a file as pasting
     the code directly into the calling file.
     All variables and functions will be available.
