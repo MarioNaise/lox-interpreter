@@ -1,0 +1,26 @@
+fun modulo(x, y) {
+  if (y == 0) {
+    return x/0;
+  }
+
+  var isNegative = false;
+
+  if(x < 0) {
+    isNegative = true;
+    x = -x;
+  }
+
+  if(y < 0) {
+    y = -y;
+  }
+
+  while (x >= y) {
+    x = x - y;
+  }
+
+  if(isNegative) {
+    return -x;
+  }
+
+  return x;
+}

@@ -1,0 +1,12 @@
+load("lib/math/index.lox");
+
+
+print(modulo(14,3));    // 2
+print(modulo(14,-3));   // 2
+print(modulo(-14,-3));  // -2
+print(modulo(-14,3));   // -2
+
+print(power(3,3));      // 27
+print(power(3,-3));     // 0.037037..
+print(power(-3,-3));    // -0.037037..
+print(power(-3,3));     // -2197

@@ -1,0 +1,2 @@
+load("modulo.lox");
+load("power.lox");
