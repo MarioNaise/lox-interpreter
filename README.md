@@ -56,8 +56,10 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   - Define classes using the `class` keyword.
 
   ```lox
-  class Person() {
-      say("Hello!");
+  class Person {
+      say() {
+        print("Hello!");
+      }
   }
   ```
 
@@ -115,7 +117,7 @@ To run the interpreter, follow these steps:
 2. Build the project:
 
    ```bash
-   make
+   go build -o lox ./cmd/main.go
    ```
 
 3. Run the interpreter:
