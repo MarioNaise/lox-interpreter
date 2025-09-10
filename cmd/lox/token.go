@@ -12,5 +12,9 @@ func newToken(tokenType string, lexeme string, literal string, line int) token {
 }
 
 func (t token) String() string {
-	return t.tokenType + " " + t.lexeme + " " + t.literal
+	if t.literal == NONE {
+		return t.tokenType + " " + t.lexeme
+	} else {
+		return t.tokenType + " " + t.lexeme + " " + t.literal
+	}
 }

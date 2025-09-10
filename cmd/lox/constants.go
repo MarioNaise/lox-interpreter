@@ -5,7 +5,7 @@ const (
 	IDENTIFIER = "IDENTIFIER"
 	NUMBER     = "NUMBER"
 	EOF        = "EOF"
-	NULL       = "null"
+	NONE       = "none"
 
 	AND    = "AND"
 	CLASS  = "CLASS"

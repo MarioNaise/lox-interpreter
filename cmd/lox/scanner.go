@@ -54,12 +54,12 @@ outer:
 			}
 		}
 	}
-	s.tokens = append(s.tokens, newToken(EOF, "", NULL, s.line))
+	s.tokens = append(s.tokens, newToken(EOF, "", NONE, s.line))
 	return s.tokens, s.scanErrors
 }
 
 func (s *scanner) defaultHandler(val string) {
-	s.tokens = append(s.tokens, newToken(strings.ToUpper(val), val, NULL, s.line))
+	s.tokens = append(s.tokens, newToken(strings.ToUpper(val), val, NONE, s.line))
 }
 
 func (s *scanner) whitespaceHandler(val string) {
@@ -69,7 +69,7 @@ func (s *scanner) whitespaceHandler(val string) {
 }
 
 func (s *scanner) specialCharHandler(val string) {
-	s.tokens = append(s.tokens, newToken(s.specCharTokenTypes[val], val, NULL, s.line))
+	s.tokens = append(s.tokens, newToken(s.specCharTokenTypes[val], val, NONE, s.line))
 }
 
 func (s *scanner) stringHandler(val string) {
@@ -85,7 +85,7 @@ func (s *scanner) identifierHandler(val string) {
 			return
 		}
 	}
-	s.tokens = append(s.tokens, newToken(IDENTIFIER, val, NULL, s.line))
+	s.tokens = append(s.tokens, newToken(IDENTIFIER, val, NONE, s.line))
 }
 
 func (s *scanner) numberHandler(val string) {

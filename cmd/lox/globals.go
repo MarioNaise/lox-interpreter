@@ -40,8 +40,7 @@ func random(_ *interpreter, args []any, t token) any {
 }
 
 func sleep(_ *interpreter, args []any, t token) any {
-	length, ok := args[0].(float64)
-	if ok {
+	if length, ok := args[0].(float64); ok {
 		time.Sleep(time.Duration(length) * time.Millisecond)
 	} else {
 		err := newError("sleep - Argument must be a number.", t.line)
@@ -108,12 +107,11 @@ func load(i *interpreter, args []any, t token) any {
 }
 
 func getFileContentLoad(fileName string, t token) string {
-	fileContents, err := os.ReadFile(fileName)
-	if err != nil {
-		err := newError("Could not read file "+fileName, t.line)
-		panic(err)
+	if fileContents, err := os.ReadFile(fileName); err == nil {
+		return string(fileContents)
 	}
-	return string(fileContents)
+	err := newError("Could not read file "+fileName, t.line)
+	panic(err)
 }
 
 func joinBaseAndFilePath(base string, filePath string) string {

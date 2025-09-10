@@ -34,7 +34,7 @@ func (c *loxClass) call(i *interpreter, args []any, t token) any {
 	return instance
 }
 
-func (i *loxInstance) String() string { return i.class.name + " instance" }
+func (i *loxInstance) String() string { return "<" + i.class.name + " instance>" }
 func (i *loxInstance) get(name token) any {
 	val, ok := i.fields[name.lexeme]
 	if ok {
@@ -49,8 +49,7 @@ func (i *loxInstance) get(name token) any {
 }
 
 func (i *loxInstance) findMethod(name string) *loxFunction {
-	method, ok := i.class.methods[name]
-	if ok {
+	if method, ok := i.class.methods[name]; ok {
 		return method
 	}
 	return nil

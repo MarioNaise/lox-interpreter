@@ -2,6 +2,7 @@ package lox
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -369,11 +370,9 @@ func (p *parser) isAtEnd() bool {
 }
 
 func (p *parser) match(types ...string) bool {
-	for _, t := range types {
-		if p.check(t) {
-			p.advance()
-			return true
-		}
+	if slices.ContainsFunc(types, p.check) {
+		p.advance()
+		return true
 	}
 	return false
 }

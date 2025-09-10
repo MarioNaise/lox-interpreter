@@ -138,7 +138,7 @@ func (a *astPrinter) visitGroup(e *expressionGroup) any {
 func (a *astPrinter) visitExpr(e *exp) any { return "" }
 
 func (a *astPrinter) primary(e expression) any {
-	if e.literal() != NULL {
+	if e.literal() != NONE {
 		return e.literal()
 	}
 	return e.lexeme()

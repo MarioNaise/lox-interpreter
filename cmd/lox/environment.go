@@ -18,8 +18,7 @@ func (e *environment) define(name string, value any) {
 }
 
 func (e *environment) assign(t token, value any) {
-	_, ok := e.values[t.lexeme]
-	if ok {
+	if _, ok := e.values[t.lexeme]; ok {
 		e.values[t.lexeme] = value
 		return
 	}
@@ -53,7 +52,7 @@ func (e *environment) getAt(distance int, token token) any {
 
 func (e *environment) ancestor(distance int) *environment {
 	env := e
-	for i := 0; i < distance; i++ {
+	for range distance {
 		env = env.enclosing
 	}
 	return env
