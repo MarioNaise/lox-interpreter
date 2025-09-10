@@ -151,21 +151,15 @@ func (r *resolver) visitVar(expr *expressionVar) any {
 }
 
 func (r *resolver) resolveLocal(expr expression) {
-	for i := r.scopes.Len() - 1; i >= 0; i-- {
-		scope := getNthOfList(r.scopes, i).Value.(map[string]bool)
+	i := r.scopes.Len() - 1
+	for e := r.scopes.Back(); e != nil; e = e.Prev() {
+		scope := e.Value.(map[string]bool)
 		if _, ok := scope[expr.lexeme()]; ok {
 			r.interpreter.resolve(expr, r.scopes.Len()-1-i)
 			return
 		}
+		i--
 	}
-}
-
-func getNthOfList(l *list.List, n int) *list.Element {
-	e := l.Front()
-	for i := 0; i < n; i++ {
-		e = e.Next()
-	}
-	return e
 }
 
 func (r *resolver) visitAssignment(expr *expressionAssignment) any {
