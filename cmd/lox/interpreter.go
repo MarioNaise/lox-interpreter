@@ -258,6 +258,10 @@ func (i *interpreter) visitLiteral(e *expressionLiteral) any {
 	return e.value()
 }
 
+func (i *interpreter) visitThis(e *expressionThis) any {
+	return i.lookupVariable(e)
+}
+
 func (i *interpreter) visitGroup(e *expressionGroup) any {
 	return i.evaluate(e.expression)
 }

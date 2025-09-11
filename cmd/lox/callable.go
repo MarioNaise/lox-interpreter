@@ -1,6 +1,9 @@
 package lox
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type callable interface {
 	arity() int
@@ -50,9 +53,15 @@ func (i *loxInstance) get(name token) any {
 
 func (i *loxInstance) findMethod(name string) *loxFunction {
 	if method, ok := i.class.methods[name]; ok {
-		return method
+		return method.bind(i)
 	}
 	return nil
+}
+
+func (f *loxFunction) bind(i *loxInstance) *loxFunction {
+	env := newEnvironment(f.closure)
+	env.define(strings.ToLower(THIS), i)
+	return &loxFunction{env, f.declaration}
 }
 
 func (i *loxInstance) set(name token, value any) {

@@ -56,9 +56,9 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   - Define classes using the `class` keyword.
 
   ```lox
-  class Person {
-      say() {
-        print("Hello!");
+  class Cow {
+      moo() {
+        print("Moo, my name is " + this.name + "!");
       }
   }
   ```
@@ -66,9 +66,10 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   - Create instances by calling the class.
 
   ```lox
-  var person = Person();
+  var cow = Cow();
 
-  person.say(); // Hello!
+  cow.name = "Mathilda";
+  cow.moo(); // Hello, my name is Mathilda!
   ```
 
 ## Built-in Features

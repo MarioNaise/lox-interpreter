@@ -14,14 +14,12 @@ type expressionVar struct {
 	expression
 }
 
-type expressionAssignment struct {
+type expressionThis struct {
 	expression
 }
 
-type expressionSet struct {
+type expressionAssignment struct {
 	expression
-	value expression
-	name  token
 }
 
 type expressionLogical struct {
@@ -53,6 +51,12 @@ type expressionGet struct {
 	name token
 }
 
+type expressionSet struct {
+	expression
+	value expression
+	name  token
+}
+
 type expressionCall struct {
 	expression
 	args []expression
@@ -75,6 +79,10 @@ type exp struct {
 
 func (e *expressionVar) accept(v expressionVisitor) any {
 	return v.visitVar(e)
+}
+
+func (e *expressionThis) accept(v expressionVisitor) any {
+	return v.visitThis(e)
 }
 
 func (e *expressionAssignment) accept(v expressionVisitor) any {

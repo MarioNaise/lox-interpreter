@@ -82,6 +82,10 @@ func (a *astPrinter) visitExprStmt(s *stmtExpr) {
 	a.printExpr(s.initializer)
 }
 
+func (a *astPrinter) visitThis(e *expressionThis) any {
+	return e.lexeme()
+}
+
 func (a *astPrinter) visitVar(e *expressionVar) any {
 	return fmt.Sprintf("%s %s", VAR, e.lexeme())
 }

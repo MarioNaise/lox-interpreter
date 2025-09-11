@@ -13,6 +13,7 @@ type expressionVisitor interface {
 	visitGet(expr *expressionGet) any
 	visitCall(expr *expressionCall) any
 	visitLiteral(expr *expressionLiteral) any
+	visitThis(expr *expressionThis) any
 	visitGroup(expr *expressionGroup) any
 	visitExpr(expr *exp) any
 }

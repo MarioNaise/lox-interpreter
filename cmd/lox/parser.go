@@ -337,6 +337,9 @@ func (p *parser) primary() expression {
 	if p.match(IDENTIFIER) {
 		return &expressionVar{&exp{nil, nil, p.previous()}}
 	}
+	if p.match(THIS) {
+		return &expressionThis{&exp{nil, nil, p.previous()}}
+	}
 	if p.match(LEFT_PAREN) {
 		expr := &expressionGroup{p.equality()}
 		p.consume(RIGHT_PAREN, "Unmatched parenthesis.")

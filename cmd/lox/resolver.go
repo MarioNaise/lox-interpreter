@@ -3,24 +3,34 @@ package lox
 import (
 	"container/list"
 	"fmt"
+	"strings"
 )
 
-type fnType int
+type (
+	fnType    int
+	classType int
+)
 
 const (
-	none fnType = iota
+	fn_none fnType = iota
 	function
 	method
 )
 
+const (
+	class_none classType = iota
+	class
+)
+
 type resolver struct {
-	interpreter *interpreter
-	scopes      *list.List
-	currentFun  fnType
+	interpreter  *interpreter
+	scopes       *list.List
+	currentFun   fnType
+	currentClass classType
 }
 
 func newResolver(i *interpreter) *resolver {
-	r := resolver{i, list.New(), none}
+	r := resolver{i, list.New(), fn_none, class_none}
 	return &r
 }
 
@@ -43,11 +53,18 @@ func (r *resolver) resolveExpr(e expression) {
 }
 
 func (r *resolver) visitClassStmt(stmt *stmtClass) {
+	enclosingClass := r.currentClass
+	r.currentClass = class
 	r.declare(stmt.name)
 	r.define(stmt.name)
+	r.beginScope()
+	scope := r.scopes.Back().Value.(map[string]bool)
+	scope[strings.ToLower(THIS)] = true
+	r.endScope()
 	for _, m := range stmt.methods {
 		r.resolveFunction(method, m)
 	}
+	r.currentClass = enclosingClass
 }
 
 func (r *resolver) visitFunStmt(stmt *stmtFun) {
@@ -106,7 +123,7 @@ func (r *resolver) visitIfStmt(stmt *stmtIf) {
 }
 
 func (r *resolver) visitReturnStmt(stmt *stmtReturn) {
-	if r.currentFun == none {
+	if r.currentFun == fn_none {
 		err := newError("Can't return from top-level code.", stmt.line)
 		panic(err)
 	}
@@ -171,6 +188,15 @@ func (r *resolver) visitAssignment(expr *expressionAssignment) any {
 func (r *resolver) visitSet(expr *expressionSet) any {
 	r.resolveExpr(expr.expression)
 	r.resolveExpr(expr.value)
+	return nil
+}
+
+func (r *resolver) visitThis(expr *expressionThis) any {
+	if r.currentClass != class {
+		err := newError("Can't use 'this' outside of a class.", expr.token().line)
+		panic(err)
+	}
+	r.resolveLocal(expr)
 	return nil
 }
 
