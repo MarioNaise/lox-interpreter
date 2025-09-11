@@ -11,58 +11,31 @@ func main() {
 		lox.Repl()
 		return
 	}
+
 	if len(os.Args) == 2 {
-		handleRunCommand(os.Args[1])
+		if ok := lox.Run(os.Args[1]); !ok {
+			os.Exit(65)
+		}
 		return
-	}
-	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh <command> <filename>")
-		os.Exit(1)
 	}
 
 	command := os.Args[1]
 	fileName := os.Args[2]
 
-	switch command {
-	case "tokenize":
-		handleTokenizeCommand(fileName)
-	case "parse":
-		handleParseCommand(fileName)
-	case "evaluate":
-		handleEvaluateCommand(fileName)
-	case "run":
-		handleRunCommand(fileName)
+	handlers := map[string]func(string) bool{
+		"tokenize": lox.Tokenize,
+		"parse":    lox.Parse,
+		"evaluate": lox.Evaluate,
+		"run":      lox.Run,
+	}
 
-	default:
+	if handler, ok := handlers[command]; ok {
+		ok := handler(fileName)
+		if !ok {
+			os.Exit(65)
+		}
+	} else {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
-	}
-}
-
-func handleTokenizeCommand(fileName string) {
-	ok := lox.Tokenize(fileName)
-	if !ok {
-		os.Exit(65)
-	}
-}
-
-func handleParseCommand(fileName string) {
-	ok := lox.Parse(fileName)
-	if !ok {
-		os.Exit(65)
-	}
-}
-
-func handleEvaluateCommand(fileName string) {
-	ok := lox.Evaluate(fileName)
-	if !ok {
-		os.Exit(65)
-	}
-}
-
-func handleRunCommand(fileName string) {
-	ok := lox.Run(fileName)
-	if !ok {
-		os.Exit(65)
 	}
 }
