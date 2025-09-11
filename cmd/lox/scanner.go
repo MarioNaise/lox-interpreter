@@ -2,143 +2,213 @@ package lox
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 )
 
-type regexRule struct {
-	handler func(string)
-	regex   string
+var keywords = map[string]string{
+	strings.ToLower(AND):    AND,
+	strings.ToLower(CLASS):  CLASS,
+	strings.ToLower(ELSE):   ELSE,
+	strings.ToLower(FALSE):  FALSE,
+	strings.ToLower(FOR):    FOR,
+	strings.ToLower(FUN):    FUN,
+	strings.ToLower(IF):     IF,
+	strings.ToLower(NIL):    NIL,
+	strings.ToLower(OR):     OR,
+	strings.ToLower(RETURN): RETURN,
+	strings.ToLower(THIS):   THIS,
+	strings.ToLower(TRUE):   TRUE,
+	strings.ToLower(VAR):    VAR,
+	strings.ToLower(WHILE):  WHILE,
 }
 
 type scanner struct {
-	specCharTokenTypes map[string]string
-	buffer             string
-	tokens             []token
-	scanErrors         []loxError
-	regexRules         []regexRule
-	keywords           []string
-	specialChars       []string
-	current            int
-	line               int
-}
-
-func (s *scanner) tokenize() ([]token, []loxError) {
-	s.tokens, s.scanErrors = []token{}, []loxError{}
-	s.current = 0
-	s.line = 1
-outer:
-	for s.current < len(s.buffer) {
-		found := false
-		for _, rule := range s.regexRules {
-			r := regexp.MustCompile(`^` + rule.regex)
-			loc := r.FindIndex([]byte(s.buffer[s.current:]))
-			if len(loc) == 0 {
-				continue
-			}
-			val := s.buffer[s.current : s.current+loc[1]]
-			found = true
-			rule.handler(val)
-			s.current += len(val)
-			continue outer
-		}
-		if !found {
-			next := s.buffer[s.current : s.current+1]
-			if next == `"` {
-				s.scanErrors = append(s.scanErrors, newError("Unterminated string.", s.line))
-				s.current++
-				break outer
-			} else {
-				s.scanErrors = append(s.scanErrors, newError(fmt.Sprintf("Unexpected character: %s", next), s.line))
-				s.current++
-			}
-		}
-	}
-	s.tokens = append(s.tokens, newToken(EOF, "", NONE, s.line))
-	return s.tokens, s.scanErrors
-}
-
-func (s *scanner) defaultHandler(val string) {
-	s.tokens = append(s.tokens, newToken(strings.ToUpper(val), val, NONE, s.line))
-}
-
-func (s *scanner) whitespaceHandler(val string) {
-	if val == "\n" {
-		s.line++
-	}
-}
-
-func (s *scanner) specialCharHandler(val string) {
-	s.tokens = append(s.tokens, newToken(s.specCharTokenTypes[val], val, NONE, s.line))
-}
-
-func (s *scanner) stringHandler(val string) {
-	linesSkipped := len(regexp.MustCompile(`\n`).FindAllString(val, len(val)))
-	s.line += linesSkipped
-	s.tokens = append(s.tokens, newToken(STRING, val, val[1:len(val)-1], s.line))
-}
-
-func (s *scanner) identifierHandler(val string) {
-	for _, keyword := range s.keywords {
-		if strings.ToLower(keyword) == val {
-			s.defaultHandler(val)
-			return
-		}
-	}
-	s.tokens = append(s.tokens, newToken(IDENTIFIER, val, NONE, s.line))
-}
-
-func (s *scanner) numberHandler(val string) {
-	addComma := regexp.MustCompile(`(^\d+$)`)
-	literal := addComma.ReplaceAllString(string(val), "$1.0")
-	cutZeros := regexp.MustCompile(`([\d])0*$`)
-	literal = cutZeros.ReplaceAllString(string(literal), "$1")
-	s.tokens = append(s.tokens, newToken(NUMBER, val, literal, s.line))
+	source     []rune
+	tokens     []token
+	scanErrors []loxError
+	start      int
+	current    int
+	line       int
 }
 
 func newScanner(str string) *scanner {
-	l := &scanner{buffer: str}
+	s := &scanner{source: []rune(str), line: 1}
+	return s
+}
 
-	regexRules := []regexRule{
-		{regex: "//.*", handler: func(_ string) {}},
-		{regex: `\s`, handler: l.whitespaceHandler},
-		{regex: `"[^"]*"`, handler: l.stringHandler},
-		{regex: "[a-zA-Z_][a-zA-Z0-9_]*", handler: l.identifierHandler},
-		{regex: `\d+(\.\d+)?`, handler: l.numberHandler},
+func (s *scanner) tokenize() ([]token, []loxError) {
+	for !s.isAtEnd() {
+		s.start = s.current
+		s.scanToken()
+	}
+	s.tokens = append(s.tokens, newToken(EOF, string('\000'), NONE, s.line))
+	return s.tokens, s.scanErrors
+}
+
+func (s *scanner) scanToken() {
+	c := s.advance()
+	switch c {
+	case '(':
+		s.addToken(LEFT_PAREN, NONE)
+	case ')':
+		s.addToken(RIGHT_PAREN, NONE)
+	case '{':
+		s.addToken(LEFT_BRACE, NONE)
+	case '}':
+		s.addToken(RIGHT_BRACE, NONE)
+	case ',':
+		s.addToken(COMMA, NONE)
+	case '.':
+		s.addToken(DOT, NONE)
+	case '-':
+		s.addToken(MINUS, NONE)
+	case '+':
+		s.addToken(PLUS, NONE)
+	case ';':
+		s.addToken(SEMICOLON, NONE)
+	case '*':
+		s.addToken(STAR, NONE)
+	case '!':
+		if s.match('=') {
+			s.addToken(BANG_EQUAL, NONE)
+		} else {
+			s.addToken(BANG, NONE)
+		}
+	case '=':
+		if s.match('=') {
+			s.addToken(EQUAL_EQUAL, NONE)
+		} else {
+			s.addToken(EQUAL, NONE)
+		}
+	case '<':
+		if s.match('=') {
+			s.addToken(LESS_EQUAL, NONE)
+		} else {
+			s.addToken(LESS, NONE)
+		}
+	case '>':
+		if s.match('=') {
+			s.addToken(GREATER_EQUAL, NONE)
+		} else {
+			s.addToken(GREATER, NONE)
+		}
+	case '/':
+		if s.match('/') {
+			for s.peek() != '\n' && !s.isAtEnd() {
+				s.advance()
+			}
+		} else {
+			s.addToken(SLASH, NONE)
+		}
+	case ' ':
+	case '\r':
+	case '\t':
+	case '\n':
+		s.line++
+	case '"':
+		s.string()
+	default:
+		if s.isDigit(c) {
+			s.number()
+		} else if s.isAlpha(c) {
+			s.identifier()
+		} else {
+			s.scanErrors = append(s.scanErrors, newError(fmt.Sprintf("Unexpected character: %c", c), s.line))
+		}
+	}
+}
+
+func (s *scanner) addToken(tokenType string, literal string) {
+	s.tokens = append(s.tokens, newToken(tokenType, string(s.source[s.start:s.current]), literal, s.line))
+}
+
+func (s *scanner) isAtEnd() bool {
+	return s.current >= len(s.source)
+}
+
+func (s *scanner) advance() rune {
+	s.current++
+	return s.source[s.current-1]
+}
+
+func (s *scanner) match(expected rune) bool {
+	if s.isAtEnd() {
+		return false
+	}
+	if s.source[s.current] != expected {
+		return false
+	}
+	s.current++
+	return true
+}
+
+func (s *scanner) peek() rune {
+	if s.isAtEnd() {
+		return '\000'
+	}
+	return s.source[s.current]
+}
+
+func (s *scanner) peekNext() rune {
+	if s.current+1 >= len(s.source) {
+		return '\000'
+	}
+	return s.source[s.current+1]
+}
+
+func (s *scanner) string() {
+	for s.peek() != '"' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
 	}
 
-	l.keywords = []string{AND, CLASS, ELSE, FALSE, FOR, FUN, IF, NIL, OR, RETURN, SUPER, THIS, TRUE, VAR, WHILE}
-	for _, keyword := range l.keywords {
-		regexRules = append(regexRules, regexRule{regex: strings.ToLower(keyword), handler: l.defaultHandler})
+	if s.isAtEnd() {
+		s.scanErrors = append(s.scanErrors, newError("Unterminated string.", s.line))
+		return
 	}
 
-	l.specialChars = []string{`\!=`, `==`, `>=`, `<=`, `>`, `<`, `\!`, `=`, `;`, `\(`, `\)`, `{`, `}`, `\*`, `\.`, `,`, `\+`, `-`, `/`}
-	for _, special := range l.specialChars {
-		regexRules = append(regexRules, regexRule{regex: special, handler: l.specialCharHandler})
-	}
+	s.advance()
+	value := s.source[s.start+1 : s.current-1]
+	s.addToken(STRING, string(value))
+}
 
-	l.regexRules = regexRules
-	l.specCharTokenTypes = map[string]string{
-		"==": EQUAL_EQUAL,
-		"!=": BANG_EQUAL,
-		">=": GREATER_EQUAL,
-		"<=": LESS_EQUAL,
-		">":  GREATER,
-		"<":  LESS,
-		"!":  BANG,
-		"=":  EQUAL,
-		";":  SEMICOLON,
-		"(":  LEFT_PAREN,
-		")":  RIGHT_PAREN,
-		"{":  LEFT_BRACE,
-		"}":  RIGHT_BRACE,
-		"*":  STAR,
-		".":  DOT,
-		",":  COMMA,
-		"+":  PLUS,
-		"-":  MINUS,
-		"/":  SLASH,
+func (s *scanner) number() {
+	for s.isDigit(s.peek()) {
+		s.advance()
 	}
+	if s.peek() == '.' && s.isDigit(s.peekNext()) {
+		s.advance()
+		for s.isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+	s.addToken(NUMBER, string(s.source[s.start:s.current]))
+}
 
-	return l
+func (s *scanner) identifier() {
+	for s.isAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+	text := string(s.source[s.start:s.current])
+	tokenType, ok := keywords[text]
+	if !ok {
+		tokenType = IDENTIFIER
+	}
+	s.addToken(tokenType, NONE)
+}
+
+func (s *scanner) isDigit(c rune) bool {
+	return c >= '0' && c <= '9'
+}
+
+func (s *scanner) isAlpha(c rune) bool {
+	return (c >= 'a' && c <= 'z') ||
+		(c >= 'A' && c <= 'Z') ||
+		c == '_'
+}
+
+func (s *scanner) isAlphaNumeric(c rune) bool {
+	return s.isAlpha(c) || s.isDigit(c)
 }
