@@ -132,6 +132,7 @@ arr[-10] = false; // does nothing
   - `string(value)`: Stringifies the value.
   - `length(arrayOrString)`: Returns the length of an array or string.
   - `parseNum(string)`: Parses a string to a number.
+  - `typeof(value)`: Returns the type of the value as a string.
   - `load(filePath)`: You can load any lox file. Think of loading a file as pasting
     the code directly into the calling file.
     All variables and functions will be available.

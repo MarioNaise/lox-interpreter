@@ -21,6 +21,7 @@ func globals() map[string]any {
 		"parseNum": &builtin{function: parseNum, lenArgs: 1},
 		"load":     &builtin{function: load, lenArgs: 1},
 		"length":   &builtin{function: length, lenArgs: 1},
+		"typeof":   &builtin{function: typeof, lenArgs: 1},
 	}
 }
 
@@ -82,6 +83,29 @@ func length(i *interpreter, args []any, t token) any {
 		return float64(len(*arr))
 	}
 	panic(newError("length - Argument must be a string or an array.", t.line))
+}
+
+func typeof(_ *interpreter, args []any, t token) any {
+	switch args[0].(type) {
+	case *loxClass:
+		return "class"
+	case *loxInstance:
+		return "object"
+	case *loxFunction:
+		return "function"
+	case *[]any:
+		return "array"
+	case string:
+		return "string"
+	case float64:
+		return "number"
+	case bool:
+		return "boolean"
+	case nil:
+		return "nil"
+	default:
+		return ""
+	}
 }
 
 func load(i *interpreter, args []any, t token) any {
