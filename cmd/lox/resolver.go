@@ -14,6 +14,7 @@ type (
 const (
 	fn_none fnType = iota
 	function
+	initializer
 	method
 )
 
@@ -62,7 +63,11 @@ func (r *resolver) visitClassStmt(stmt *stmtClass) {
 	scope[strings.ToLower(THIS)] = true
 	r.endScope()
 	for _, m := range stmt.methods {
-		r.resolveFunction(method, m)
+		declaration := method
+		if m.name.lexeme == INIT {
+			declaration = initializer
+		}
+		r.resolveFunction(declaration, m)
 	}
 	r.currentClass = enclosingClass
 }
@@ -128,6 +133,10 @@ func (r *resolver) visitReturnStmt(stmt *stmtReturn) {
 		panic(err)
 	}
 	if stmt.value != nil {
+		if r.currentFun == initializer {
+			err := newError("Can't return a value from an initializer.", stmt.line)
+			panic(err)
+		}
 		r.resolveExpr(stmt.value)
 	}
 }

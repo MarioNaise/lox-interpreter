@@ -54,9 +54,18 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
 - **Classes**:
 
   - Define classes using the `class` keyword.
+    - constructors are defined with the `init` method
+    - returning values from it is not allowed
+    - empty return statements are allowed and will always return 'this'
+    - otherwise nil will be returned
 
   ```lox
   class Cow {
+      init(name) {
+          this.name = name;
+          return; // will return 'this'
+          // return 0; -> would throw an error
+      }
       moo() {
         print("Moo, my name is " + this.name + "!");
       }
@@ -66,10 +75,16 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   - Create instances by calling the class.
 
   ```lox
-  var cow = Cow();
+  var cow = Cow("Mathilda");
+  cow.moo(); // Moo, my name is Mathilda!
+  ```
 
-  cow.name = "Mathilda";
-  cow.moo(); // Hello, my name is Mathilda!
+  - Invoking _init()_ directly is allowed;
+
+  ```lox
+  var secondCow = cow.init("Maggy"); // refers to the same instance as 'cow'
+  secondCow.moo(); // Moo, my name is Maggy!
+  cow.moo();       // Moo, my name is Maggy!
   ```
 
 ## Built-in Features

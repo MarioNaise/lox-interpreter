@@ -46,7 +46,7 @@ func (i *interpreter) visitClassStmt(stmt *stmtClass) {
 	i.environment.define(stmt.name.lexeme, nil)
 	methods := make(map[string]*loxFunction)
 	for _, m := range stmt.methods {
-		fun := &loxFunction{newEnvironment(i.environment), m}
+		fun := &loxFunction{newEnvironment(i.environment), m, m.name.lexeme == INIT}
 		methods[m.name.lexeme] = fun
 	}
 	class := &loxClass{methods, stmt.name.lexeme}
@@ -54,7 +54,7 @@ func (i *interpreter) visitClassStmt(stmt *stmtClass) {
 }
 
 func (i *interpreter) visitFunStmt(s *stmtFun) {
-	function := &loxFunction{newEnvironment(i.environment), s}
+	function := &loxFunction{newEnvironment(i.environment), s, false}
 	i.environment.define(s.name.lexeme, function)
 }
 

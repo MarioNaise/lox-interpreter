@@ -14,6 +14,7 @@ const (
 	FOR    = "FOR"
 	FUN    = "FUN"
 	IF     = "IF"
+	INIT   = "init"
 	NIL    = "NIL"
 	OR     = "OR"
 	RETURN = "RETURN"

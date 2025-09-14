@@ -21,8 +21,9 @@ type loxInstance struct {
 }
 
 type loxFunction struct {
-	closure     *environment
-	declaration *stmtFun
+	closure       *environment
+	declaration   *stmtFun
+	isInitializer bool
 }
 
 type builtin struct {
@@ -31,10 +32,28 @@ type builtin struct {
 }
 
 func (c *loxClass) String() string { return "<class " + c.name + ">" }
-func (c *loxClass) arity() int     { return 0 }
+func (c *loxClass) arity() int {
+	initializer := c.findMethod(INIT)
+	if initializer == nil {
+		return 0
+	}
+	return initializer.arity()
+}
+
 func (c *loxClass) call(i *interpreter, args []any, t token) any {
 	instance := &loxInstance{c, make(map[string]any)}
+	initializer := c.findMethod(INIT)
+	if initializer != nil {
+		initializer.bind(instance).call(i, args, t)
+	}
 	return instance
+}
+
+func (c *loxClass) findMethod(name string) *loxFunction {
+	if method, ok := c.methods[name]; ok {
+		return method
+	}
+	return nil
 }
 
 func (i *loxInstance) String() string { return "<" + i.class.name + " instance>" }
@@ -43,29 +62,22 @@ func (i *loxInstance) get(name token) any {
 	if ok {
 		return val
 	}
-	m := i.findMethod(name.lexeme)
+	m := i.class.findMethod(name.lexeme)
 	if m != nil {
-		return m
+		return m.bind(i)
 	}
 	err := newError(fmt.Sprintf("Undefined property '%s'.", name.lexeme), name.line)
 	panic(err)
 }
 
-func (i *loxInstance) findMethod(name string) *loxFunction {
-	if method, ok := i.class.methods[name]; ok {
-		return method.bind(i)
-	}
-	return nil
+func (i *loxInstance) set(name token, value any) {
+	i.fields[name.lexeme] = value
 }
 
 func (f *loxFunction) bind(i *loxInstance) *loxFunction {
 	env := newEnvironment(f.closure)
 	env.define(strings.ToLower(THIS), i)
-	return &loxFunction{env, f.declaration}
-}
-
-func (i *loxInstance) set(name token, value any) {
-	i.fields[name.lexeme] = value
+	return &loxFunction{env, f.declaration, f.isInitializer}
 }
 
 func (f *loxFunction) String() string { return "<fn " + f.declaration.name.lexeme + ">" }
@@ -76,6 +88,9 @@ func (f *loxFunction) call(i *interpreter, args []any, t token) (value any) {
 			switch r := r.(type) {
 			case returnValue:
 				value = r.value
+				if f.isInitializer {
+					value = f.closure.getAt(0, token{lexeme: strings.ToLower(THIS)})
+				}
 				return
 			default:
 				panic(r)
