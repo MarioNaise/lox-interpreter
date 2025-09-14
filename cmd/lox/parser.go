@@ -190,6 +190,9 @@ func (p *parser) assignment() expression {
 			return &expressionAssignment{exp}
 		case *expressionGet:
 			return &expressionSet{expr.expression, value, expr.name}
+		case *expressionIndex:
+			return &expressionSetIndex{expr.expression, expr.index, value}
+
 		}
 		err := newError("Invalid assignment target.", p.peek().line)
 		p.parseErrors = append(p.parseErrors, err)
@@ -291,6 +294,10 @@ func (p *parser) call() expression {
 		} else if p.match(DOT) {
 			name := p.consume(IDENTIFIER, "Expect property name after '.'.")
 			expr = &expressionGet{expr, name}
+		} else if p.match(LEFT_BRACKET) {
+			index := p.expression()
+			p.consume(RIGHT_BRACKET, "Expect ']' after index.")
+			expr = &expressionIndex{expr, index}
 		} else {
 			break
 		}
@@ -333,6 +340,19 @@ func (p *parser) primary() expression {
 	if p.match(STRING) {
 		val := p.previous().literal
 		return &expressionLiteral{&exp{nil, nil, p.previous()}, val}
+	}
+	if p.match(LEFT_BRACKET) {
+		items := []expression{}
+		for !p.check(RIGHT_BRACKET) && !p.isAtEnd() {
+			item := p.expression()
+			items = append(items, item)
+			if p.peek().tokenType != RIGHT_BRACKET {
+				p.consume(COMMA, "',' expected between array elements.")
+			}
+		}
+		p.consume(RIGHT_BRACKET, "']' expected after array elements.")
+		expr := &expressionLiteral{&exp{nil, nil, p.previous()}, items}
+		return expr
 	}
 	if p.match(IDENTIFIER) {
 		return &expressionVar{&exp{nil, nil, p.previous()}}

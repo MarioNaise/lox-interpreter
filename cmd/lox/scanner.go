@@ -48,6 +48,10 @@ func (s *scanner) tokenize() ([]token, []loxError) {
 func (s *scanner) scanToken() {
 	c := s.advance()
 	switch c {
+	case '[':
+		s.addToken(LEFT_BRACKET, NONE)
+	case ']':
+		s.addToken(RIGHT_BRACKET, NONE)
 	case '(':
 		s.addToken(LEFT_PAREN, NONE)
 	case ')':

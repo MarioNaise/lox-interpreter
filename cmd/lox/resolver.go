@@ -247,7 +247,28 @@ func (r *resolver) visitCall(expr *expressionCall) any {
 	return nil
 }
 
-func (r *resolver) visitLiteral(expr *expressionLiteral) any { return nil }
+func (r *resolver) visitIndex(expr *expressionIndex) any {
+	r.resolveExpr(expr.expression)
+	r.resolveExpr(expr.index)
+	return nil
+}
+
+func (r *resolver) visitSetIndex(expr *expressionSetIndex) any {
+	r.resolveExpr(expr.expression)
+	r.resolveExpr(expr.index)
+	return nil
+}
+
+func (r *resolver) visitLiteral(expr *expressionLiteral) any {
+	switch expr.value().(type) {
+	case []expression:
+		for _, e := range expr.value().([]expression) {
+			r.resolveExpr(e)
+		}
+	default:
+	}
+	return nil
+}
 
 func (r *resolver) visitGroup(expr *expressionGroup) any {
 	r.resolveExpr(expr.expression)

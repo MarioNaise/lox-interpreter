@@ -62,6 +62,17 @@ type expressionCall struct {
 	args []expression
 }
 
+type expressionIndex struct {
+	expression
+	index expression
+}
+
+type expressionSetIndex struct {
+	expression
+	index expression
+	value expression
+}
+
 type expressionLiteral struct {
 	expression
 	val any
@@ -119,6 +130,14 @@ func (e *expressionSet) accept(v expressionVisitor) any {
 
 func (e *expressionCall) accept(v expressionVisitor) any {
 	return v.visitCall(e)
+}
+
+func (e *expressionIndex) accept(v expressionVisitor) any {
+	return v.visitIndex(e)
+}
+
+func (e *expressionSetIndex) accept(v expressionVisitor) any {
+	return v.visitSetIndex(e)
 }
 
 func (e *expressionUnary) accept(v expressionVisitor) any {

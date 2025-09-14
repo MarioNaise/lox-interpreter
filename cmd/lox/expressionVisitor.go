@@ -12,6 +12,8 @@ type expressionVisitor interface {
 	visitUnary(expr *expressionUnary) any
 	visitGet(expr *expressionGet) any
 	visitCall(expr *expressionCall) any
+	visitIndex(expr *expressionIndex) any
+	visitSetIndex(expr *expressionSetIndex) any
 	visitLiteral(expr *expressionLiteral) any
 	visitThis(expr *expressionThis) any
 	visitGroup(expr *expressionGroup) any

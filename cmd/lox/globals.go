@@ -19,6 +19,7 @@ func globals() map[string]any {
 		"string":   &builtin{function: stringify, lenArgs: 1},
 		"parseNum": &builtin{function: parseNum, lenArgs: 1},
 		"load":     &builtin{function: load, lenArgs: 1},
+		"length":   &builtin{function: length, lenArgs: 1},
 	}
 }
 
@@ -65,6 +66,18 @@ func parseNum(i *interpreter, args []any, t token) any {
 		panic(err)
 	}
 	return num
+}
+
+func length(i *interpreter, args []any, t token) any {
+	str, ok := args[0].(string)
+	if ok {
+		return float64(len([]rune(str)))
+	}
+	arr, ok := args[0].(*[]any)
+	if ok {
+		return float64(len(*arr))
+	}
+	panic(newError("length - Argument must be a string or an array.", t.line))
 }
 
 func load(i *interpreter, args []any, t token) any {

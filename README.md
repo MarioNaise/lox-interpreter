@@ -89,7 +89,30 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
 
 ## Built-in Features
 
-- **Types**: strings, numbers, booleans, and `nil`.
+- **Data Types**: strings, numbers, booleans, arrays, and `nil`.
+
+```lox
+// string
+var str = "hello";
+
+// number
+var int = 1;
+var float = 1.5;
+
+// boolean
+var bool = true;
+
+// array
+var arr = [str, int, float, bool, nil];
+
+// arrays can be indexed
+print(arr[0]);        // hello
+print(arr[0.3]);      // hello
+print(arr[float]);      // hello
+print(arr[100]);      // <nil>
+print(arr[-1]);       // <nil>
+print(arr["string"]); // <nil>
+```
 
 - **Functions**:
 
@@ -99,6 +122,7 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   - `random(num)`: Creates a random number between 0 and num (num not included).
   - `sleep(milliseconds)`: Pauses execution for the specified duration.
   - `string(value)`: Stringifies the value.
+  - `length(arrayOrString)`: Returns the length of an array or string.
   - `parseNum(string)`: Parses a string to a number.
   - `load(filePath)`: You can load any lox file. Think of loading a file as pasting
     the code directly into the calling file.

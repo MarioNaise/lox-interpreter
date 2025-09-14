@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"lox/cmd/lox"
 	"os"
+
+	"lox/cmd/lox"
 )
 
 func main() {

@@ -46,6 +46,9 @@ func (a *astPrinter) visitFunStmt(s *stmtFun) {
 
 func (a *astPrinter) visitVarStmt(s *stmtVar) {
 	a.prefix(VAR + ":" + s.name.lexeme)
+	if s.initializer == nil {
+		fmt.Println()
+	}
 	a.printExpr(s.initializer)
 }
 
@@ -131,6 +134,14 @@ func (a *astPrinter) visitCall(e *expressionCall) any {
 	return fmt.Sprintf("(%s [%s])", e.lexeme(), argStr)
 }
 
+func (a *astPrinter) visitIndex(e *expressionIndex) any {
+	return fmt.Sprintf("%s[%s]", e.expression.accept(a), e.index.accept(a))
+}
+
+func (a *astPrinter) visitSetIndex(e *expressionSetIndex) any {
+	return fmt.Sprintf("%s:[%s] %s", e.expression.accept(a), e.index.accept(a), e.value.accept(a))
+}
+
 func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
 	return a.primary(e)
 }
@@ -141,11 +152,15 @@ func (a *astPrinter) visitGroup(e *expressionGroup) any {
 
 func (a *astPrinter) visitExpr(e *exp) any { return "" }
 
-func (a *astPrinter) primary(e expression) any {
-	if e.literal() != NONE {
-		return e.literal()
+func (a *astPrinter) primary(e *expressionLiteral) any {
+	if e.token().tokenType == RIGHT_BRACKET {
+		joined := a.joinExprs(e.val.([]expression))
+		return fmt.Sprintf("[%s]", joined)
 	}
-	return e.lexeme()
+	if e.literal() == NONE {
+		return e.lexeme()
+	}
+	return e.literal()
 }
 
 func (a *astPrinter) parenthesized(name string, e ...expression) string {
@@ -160,7 +175,7 @@ func (a *astPrinter) joinExprs(e []expression) string {
 			s = append(s, expr.accept(a).(string))
 		}
 	}
-	joined := strings.Join(s, " ")
+	joined := strings.Join(s, ",")
 	return joined
 }
 

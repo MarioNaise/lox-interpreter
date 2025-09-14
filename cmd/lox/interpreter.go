@@ -254,8 +254,57 @@ func (i *interpreter) visitCall(e *expressionCall) any {
 	return function.call(i, args, e.token())
 }
 
+func (i *interpreter) visitIndex(e *expressionIndex) any {
+	// Idea: support expressionGet (e.g. obj["property"])
+	// TODO: handle strings
+	arr, ok := e.expression.accept(i).(*[]any)
+	if !ok {
+		return nil
+	}
+	index, ok := e.index.accept(i).(float64)
+	if !ok {
+		return nil
+	}
+	indexInt := int(index)
+	if indexInt < len(*arr) && indexInt >= 0 {
+		return (*arr)[indexInt]
+	}
+	return nil
+}
+
+func (i *interpreter) visitSetIndex(e *expressionSetIndex) any {
+	arrPtr, ok := e.expression.accept(i).(*[]any)
+	arr := *arrPtr
+	if !ok {
+		return nil
+	}
+	index, ok := e.index.accept(i).(float64)
+	if !ok {
+		return nil
+	}
+	value := e.value.accept(i)
+	if index < 0 {
+		return nil
+	}
+	if index >= float64(len(arr)) {
+		arr = append(arr, make([]any, int(index)-len(arr)+1)...)
+	}
+	arr[int(index)] = value
+	(*arrPtr) = arr
+	return value
+}
+
 func (i *interpreter) visitLiteral(e *expressionLiteral) any {
-	return e.value()
+	switch e.value().(type) {
+	case []expression:
+		items := make([]any, 0)
+		for _, exp := range e.value().([]expression) {
+			items = append(items, exp.accept(i))
+		}
+		return &items
+	default:
+		return e.value()
+	}
 }
 
 func (i *interpreter) visitThis(e *expressionThis) any {
@@ -317,9 +366,6 @@ func (i *interpreter) isTruthy(e expression) bool {
 }
 
 func (i *interpreter) stringify(val any) string {
-	if val == nil {
-		return "nil"
-	}
 	return fmt.Sprintf("%v", val)
 }
 
