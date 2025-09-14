@@ -352,6 +352,14 @@ func (i *interpreter) hasSameType(a any, b any) bool {
 func (i *interpreter) isTruthy(e expression) bool {
 	value := i.evaluate(e)
 	switch value := value.(type) {
+	case *loxClass:
+		return true
+	case *loxInstance:
+		return true
+	case *loxFunction:
+		return true
+	case *[]any:
+		return true
 	case string:
 		return value != ""
 	case float64:
