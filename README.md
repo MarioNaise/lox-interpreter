@@ -11,7 +11,6 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   ```
 
 - **Control Flow**:
-
   - `if` and `else`
 
   ```lox
@@ -52,19 +51,18 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
   ```
 
 - **Classes**:
-
   - Define classes using the `class` keyword.
     - constructors are defined with the `init` method
-    - returning values from it is not allowed
-    - empty return statements are allowed and will always return 'this'
-    - otherwise nil will be returned
+      - returning values from `init` is not allowed
+      - empty return statements are allowed and will always return 'this'
+      - otherwise nil will be returned
 
   ```lox
   class Cow {
       init(name) {
-          this.name = name;
-          return; // will return 'this'
-          // return 0; -> would throw an error
+          this.name = name; // returns nil
+          // return;           would return 'this'
+          // return 0;         would throw an error
       }
       moo() {
         print("Moo, my name is " + this.name + "!");
@@ -83,8 +81,8 @@ Check out [Crafting Interpreters](https://craftinginterpreters.com/).
 
   ```lox
   var secondCow = cow.init("Maggy"); // refers to the same instance as 'cow'
-  secondCow.moo(); // Moo, my name is Maggy!
-  cow.moo();       // Moo, my name is Maggy!
+  secondCow.moo(); // "Moo, my name is Maggy!"
+  cow.moo();       // "Moo, my name is Maggy!"
   ```
 
 ## Built-in Features
@@ -106,9 +104,9 @@ var bool = true;
 var arr = [str, int, float, bool, nil];
 
 // arrays can be indexed with all numbers. floats will be floored.
-print(arr[0]);            // hello
-print(arr[0.3]);          // hello
-print(arr[float]);        // hello
+print(arr[0]);            // "hello"
+print(arr[0.3]);          // "hello"
+print(arr[float]);        // 1
 
 // negative indices count from the end
 print(arr[-2]);           // true
@@ -120,13 +118,12 @@ print(arr["string"]);     // <nil>
 
 // setting index out of bounds will expand the array and fill the gaps with nil
 // this works only for positive indices
-a[6] = "new";
-print(a); // [hello, 1, 1.5, true, <nil>, <nil>, new]
-a[-10] = false; // does nothing
+arr[6] = "new";
+print(arr); // ["hello", 1, 1.5, true, <nil>, <nil>, "new"]
+arr[-10] = false; // does nothing
 ```
 
 - **Functions**:
-
   - `read()`: Reads input from the user.
   - `clock()`: Returns the current time in seconds.
   - `print(value)`: Outputs the value to the console.
