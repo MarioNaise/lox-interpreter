@@ -105,13 +105,24 @@ var bool = true;
 // array
 var arr = [str, int, float, bool, nil];
 
-// arrays can be indexed
-print(arr[0]);        // hello
-print(arr[0.3]);      // hello
-print(arr[float]);      // hello
-print(arr[100]);      // <nil>
-print(arr[-1]);       // <nil>
-print(arr["string"]); // <nil>
+// arrays can be indexed with all numbers. floats will be floored.
+print(arr[0]);            // hello
+print(arr[0.3]);          // hello
+print(arr[float]);        // hello
+
+// negative indices count from the end
+print(arr[-2]);           // true
+print(arr[-2.2]);         // true
+
+// indexing out of bounds or with invalid indices returns nil
+print(arr[100]);          // <nil>
+print(arr["string"]);     // <nil>
+
+// setting index out of bounds will expand the array and fill the gaps with nil
+// this works only for positive indices
+a[6] = "new";
+print(a); // [hello, 1, 1.5, true, <nil>, <nil>, new]
+a[-10] = false; // does nothing
 ```
 
 - **Functions**:

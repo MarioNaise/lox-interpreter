@@ -271,6 +271,9 @@ func (i *interpreter) visitIndex(e *expressionIndex) any {
 	if indexInt < len(*arr) && indexInt >= 0 {
 		return (*arr)[indexInt]
 	}
+	if indexInt < 0 && 0-indexInt <= len(*arr) {
+		return (*arr)[len(*arr)+indexInt]
+	}
 	return nil
 }
 
