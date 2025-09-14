@@ -3,6 +3,8 @@ package lox
 import (
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 type interpreter struct {
@@ -374,7 +376,26 @@ func (i *interpreter) isTruthy(e expression) bool {
 }
 
 func (i *interpreter) stringify(val any) string {
-	return fmt.Sprintf("%v", val)
+	switch val := val.(type) {
+	case string:
+		if str, err := strconv.Unquote(fmt.Sprintf("\"%s\"", val)); err != nil {
+			panic(newError("String couldn't be unquoted: "+err.Error(), i.line))
+		} else {
+			return fmt.Sprintf("\"%s\"", str)
+		}
+	case *[]any:
+		return i.stringifyArray(val)
+	default:
+		return fmt.Sprintf("%v", val)
+	}
+}
+
+func (i *interpreter) stringifyArray(arr *[]any) string {
+	strs := make([]string, 0)
+	for _, v := range *arr {
+		strs = append(strs, i.stringify(v))
+	}
+	return fmt.Sprintf("[%s]", strings.Join(strs, ", "))
 }
 
 func (i *interpreter) syncOnError() {

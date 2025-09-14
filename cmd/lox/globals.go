@@ -6,6 +6,7 @@ import (
 	"math/rand/v2"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -29,8 +30,11 @@ func readLn(*interpreter, []any, token) any {
 	return s.Text()
 }
 
-func getTime(*interpreter, []any, token) any          { return float64(time.Now().Unix()) }
-func printLn(i *interpreter, args []any, t token) any { fmt.Println(i.stringify(args[0])); return nil }
+func getTime(*interpreter, []any, token) any { return float64(time.Now().Unix()) }
+func printLn(i *interpreter, args []any, t token) any {
+	fmt.Println(strings.Trim(i.stringify(args[0]), "\""))
+	return nil
+}
 
 func random(_ *interpreter, args []any, t token) any {
 	if v, ok := args[0].(float64); ok && v > 0 {
