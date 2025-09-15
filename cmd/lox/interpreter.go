@@ -258,45 +258,61 @@ func (i *interpreter) visitCall(e *expressionCall) any {
 
 func (i *interpreter) visitIndex(e *expressionIndex) any {
 	// Idea: support expressionGet (e.g. obj["property"])
-	// TODO: handle strings
-	arr, ok := e.expression.accept(i).(*[]any)
-	if !ok {
-		return nil
-	}
 	index, ok := e.index.accept(i).(float64)
 	if !ok {
 		return nil
 	}
 	indexInt := int(index)
-	if indexInt < len(*arr) && indexInt >= 0 {
-		return (*arr)[indexInt]
+
+	switch arr := e.expression.accept(i).(type) {
+	case *[]any:
+		if indexInt < len(*arr) && indexInt >= 0 {
+			return (*arr)[indexInt]
+		}
+		if indexInt < 0 && 0-indexInt <= len(*arr) {
+			return (*arr)[len(*arr)+indexInt]
+		}
+		return nil
+	case string:
+		runes := []rune(arr)
+		if indexInt < len(runes) && indexInt >= 0 {
+			return string(runes[indexInt])
+		}
+		if indexInt < 0 && 0-indexInt <= len(runes) {
+			return string(runes[len(runes)+indexInt])
+		}
+		return nil
+	default:
+		return nil
 	}
-	if indexInt < 0 && 0-indexInt <= len(*arr) {
-		return (*arr)[len(*arr)+indexInt]
-	}
-	return nil
 }
 
 func (i *interpreter) visitSetIndex(e *expressionSetIndex) any {
-	arrPtr, ok := e.expression.accept(i).(*[]any)
-	arr := *arrPtr
-	if !ok {
-		return nil
-	}
 	index, ok := e.index.accept(i).(float64)
 	if !ok {
 		return nil
 	}
 	value := e.value.accept(i)
-	if index < 0 {
+	switch arr := e.expression.accept(i).(type) {
+	case *[]any:
+		a := *arr
+		if !ok {
+			return nil
+		}
+		if index < 0 {
+			return nil
+		}
+		if index >= float64(len(a)) {
+			a = append(a, make([]any, int(index)-len(a)+1)...)
+		}
+		a[int(index)] = value
+		(*arr) = a
+		return value
+	case string:
+		return value
+	default:
 		return nil
 	}
-	if index >= float64(len(arr)) {
-		arr = append(arr, make([]any, int(index)-len(arr)+1)...)
-	}
-	arr[int(index)] = value
-	(*arrPtr) = arr
-	return value
 }
 
 func (i *interpreter) visitLiteral(e *expressionLiteral) any {

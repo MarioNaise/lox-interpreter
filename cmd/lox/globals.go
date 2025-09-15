@@ -56,7 +56,7 @@ func sleep(_ *interpreter, args []any, t token) any {
 }
 
 func stringify(i *interpreter, args []any, t token) any {
-	return i.stringify(args[0])
+	return strings.Trim(i.stringify(args[0]), "\"")
 }
 
 func parseNum(i *interpreter, args []any, t token) any {
