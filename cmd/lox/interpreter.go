@@ -159,9 +159,6 @@ func (i *interpreter) visitLogical(e *expressionLogical) any {
 func (i *interpreter) visitEquality(e *expressionEquality) any {
 	left := i.evaluate(e.expr())
 	right := i.evaluate(e.next())
-	if !i.hasSameType(left, right) {
-		return false
-	}
 	switch e.tokenType() {
 	case EQUAL_EQUAL:
 		return left == right
@@ -361,13 +358,6 @@ func (i *interpreter) parseFloat(e expression) float64 {
 	}
 	err := newError(fmt.Sprintf("Operand must be a number: %v", e.lexeme()), e.token().line)
 	panic(err)
-}
-
-func (i *interpreter) hasSameType(a any, b any) bool {
-	if a == nil || b == nil {
-		return a == b
-	}
-	return reflect.TypeOf(a).Name() == reflect.TypeOf(b).Name()
 }
 
 func (i *interpreter) isTruthy(e expression) bool {
