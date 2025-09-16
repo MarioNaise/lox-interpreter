@@ -1,0 +1,28 @@
+fun slice(arr, start, end) {
+  var result = [];
+
+  if (start < 0) {
+    start = length(arr) + start;
+  }
+
+  if (end < 0) {
+    end = length(arr) + end;
+  }
+
+  if (start < 0) start = 0;
+  if (end > length(arr)) end = length(arr);
+
+  for (var i = start;i < end; i = i+1) {
+    result[length(result)] = arr[i];
+  }
+
+  if (typeof(arr) == "string") {
+    var str = "";
+    for (var i = 0; i < length(result);i = i+1) {
+      str = str+result[i];
+    }
+    return str;
+  }
+
+  return result;
+}
