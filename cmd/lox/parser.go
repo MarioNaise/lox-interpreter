@@ -30,108 +30,108 @@ func (p *parser) expression() expression {
 }
 
 func (p *parser) declaration() stmt {
-	if p.match(CLASS) {
+	if p.match(Class) {
 		return p.classDeclaration()
 	}
-	if p.match(FUN) {
+	if p.match(Fun) {
 		return p.function("function")
 	}
-	if p.match(VAR) {
+	if p.match(Var) {
 		return p.varDeclaration()
 	}
 	return p.statement()
 }
 
 func (p *parser) classDeclaration() stmt {
-	name := p.consume(IDENTIFIER, "Expected class name.")
+	name := p.consume(Identifier, "Expected class name.")
 	var methods []*stmtFun
-	p.consume(LEFT_BRACE, "Expected '{' before class body.")
-	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+	p.consume(LeftBrace, "Expected '{' before class body.")
+	for !p.check(RightBrace) && !p.isAtEnd() {
 		methods = append(methods, p.function("method").(*stmtFun))
 	}
-	p.consume(RIGHT_BRACE, "Expected '}' after class body.")
+	p.consume(RightBrace, "Expected '}' after class body.")
 	return &stmtClass{name, methods}
 }
 
 func (p *parser) function(kind string) stmt {
-	name := p.consume(IDENTIFIER, "Expected "+kind+" name.")
-	p.consume(LEFT_PAREN, "Expected '(' after "+kind+" name.")
+	name := p.consume(Identifier, "Expected "+kind+" name.")
+	p.consume(LeftParen, "Expected '(' after "+kind+" name.")
 	params := []token{}
 	getParam := func() {
 		if len(params) >= 255 {
 			err := newError("Can't have more than 255 parameters.", p.peek().line)
 			p.parseErrors = append(p.parseErrors, err)
 		}
-		params = append(params, p.consume(IDENTIFIER, "Expected parameter name."))
+		params = append(params, p.consume(Identifier, "Expected parameter name."))
 	}
-	if !p.check(RIGHT_PAREN) {
-		for getParam(); p.match(COMMA); {
+	if !p.check(RightParen) {
+		for getParam(); p.match(Comma); {
 			getParam()
 		}
 	}
-	p.consume(RIGHT_PAREN, "Expect ')' after parameters.")
-	p.consume(LEFT_BRACE, "Expect '{' before "+kind+" body.")
+	p.consume(RightParen, "Expect ')' after parameters.")
+	p.consume(LeftBrace, "Expect '{' before "+kind+" body.")
 	body := p.blockStmt()
 	return &stmtFun{name, body, params}
 }
 
 func (p *parser) varDeclaration() stmt {
-	name := p.consume(IDENTIFIER, "Expected variable name.")
+	name := p.consume(Identifier, "Expected variable name.")
 	var initializer expression
-	if p.match(EQUAL) {
+	if p.match(Equal) {
 		initializer = p.expression()
 	}
-	p.consume(SEMICOLON, "Expected ';' after variable declaration.")
+	p.consume(Semicolon, "Expected ';' after variable declaration.")
 	return &stmtVar{initializer, name}
 }
 
 func (p *parser) statement() stmt {
-	if p.match(FOR) {
+	if p.match(For) {
 		return p.forStmt()
 	}
-	if p.match(IF) {
+	if p.match(If) {
 		return p.ifStmt()
 	}
-	if p.match(RETURN) {
+	if p.match(Return) {
 		return p.returnStmt()
 	}
-	if p.match(WHILE) {
+	if p.match(While) {
 		return p.whileStmt()
 	}
-	if p.match(LEFT_BRACE) {
+	if p.match(LeftBrace) {
 		return p.blockStmt()
 	}
 	expr := p.expression()
-	p.consume(SEMICOLON, "Expected ';' after expression.")
+	p.consume(Semicolon, "Expected ';' after expression.")
 	return &stmtExpr{expr}
 }
 
 func (p *parser) forStmt() stmt {
-	p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+	p.consume(LeftParen, "Expect '(' after 'for'.")
 	var initializer stmt
-	if p.match(SEMICOLON) {
+	if p.match(Semicolon) {
 		initializer = nil
-	} else if p.match(VAR) {
+	} else if p.match(Var) {
 		initializer = p.varDeclaration()
 	} else {
 		initializer = &stmtExpr{p.expression()}
 	}
 	var condition expression
-	if !p.check(SEMICOLON) {
+	if !p.check(Semicolon) {
 		condition = p.expression()
 	}
-	p.consume(SEMICOLON, "Expect ';' after loop condition.")
+	p.consume(Semicolon, "Expect ';' after loop condition.")
 	var increment expression
-	if !p.check(RIGHT_PAREN) {
+	if !p.check(RightParen) {
 		increment = p.expression()
 	}
-	p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+	p.consume(RightParen, "Expect ')' after for clauses.")
 	body := p.statement()
 	if increment != nil {
 		body = &stmtBlock{[]stmt{body, &stmtExpr{increment}}}
 	}
 	if condition == nil {
-		exprTrue := &exp{nil, nil, token{TRUE, "true", "true", p.peek().line}}
+		exprTrue := &exp{nil, nil, token{True, "true", "true", p.peek().line}}
 		condition = &expressionLiteral{exprTrue, true}
 	}
 	body = &stmtWhile{condition, body}
@@ -142,12 +142,12 @@ func (p *parser) forStmt() stmt {
 }
 
 func (p *parser) ifStmt() stmt {
-	p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
+	p.consume(LeftParen, "Expect '(' after 'if'.")
 	condition := p.expression()
-	p.consume(RIGHT_PAREN, "Expect ')' after if condition.")
+	p.consume(RightParen, "Expect ')' after if condition.")
 	thenBranch := p.statement()
 	var elseBranch stmt
-	if p.match(ELSE) {
+	if p.match(Else) {
 		elseBranch = p.statement()
 	}
 	return &stmtIf{condition, thenBranch, elseBranch}
@@ -155,33 +155,33 @@ func (p *parser) ifStmt() stmt {
 
 func (p *parser) returnStmt() stmt {
 	var val expression
-	if !p.check(SEMICOLON) {
+	if !p.check(Semicolon) {
 		val = p.expression()
 	}
-	p.consume(SEMICOLON, "Expected ';' after return value.")
+	p.consume(Semicolon, "Expected ';' after return value.")
 	return &stmtReturn{val, p.previous()}
 }
 
 func (p *parser) whileStmt() stmt {
-	p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
+	p.consume(LeftParen, "Expect '(' after 'while'.")
 	condition := p.expression()
-	p.consume(RIGHT_PAREN, "Expect ')' after condition.")
+	p.consume(RightParen, "Expect ')' after condition.")
 	body := p.statement()
 	return &stmtWhile{condition, body}
 }
 
 func (p *parser) blockStmt() stmt {
 	stmts := []stmt{}
-	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+	for !p.check(RightBrace) && !p.isAtEnd() {
 		stmts = append(stmts, p.declaration())
 	}
-	p.consume(RIGHT_BRACE, "Expected '}' after block.")
+	p.consume(RightBrace, "Expected '}' after block.")
 	return &stmtBlock{stmts}
 }
 
 func (p *parser) assignment() expression {
 	expr := p.or()
-	if p.match(EQUAL) {
+	if p.match(Equal) {
 		operator := p.previous()
 		value := p.assignment()
 		switch expr := expr.(type) {
@@ -202,7 +202,7 @@ func (p *parser) assignment() expression {
 
 func (p *parser) or() expression {
 	expr := p.and()
-	for p.match(OR) {
+	for p.match(Or) {
 		operator := p.previous()
 		right := p.and()
 		expr = &expressionLogical{&exp{expr, right, operator}}
@@ -212,7 +212,7 @@ func (p *parser) or() expression {
 
 func (p *parser) and() expression {
 	expr := p.equality()
-	for p.match(AND) {
+	for p.match(And) {
 		operator := p.previous()
 		right := p.equality()
 		expr = &expressionLogical{&exp{expr, right, operator}}
@@ -222,7 +222,7 @@ func (p *parser) and() expression {
 
 func (p *parser) equality() expression {
 	expr := p.comparison()
-	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
+	for p.match(BangEqual, EqualEqual) {
 		operator := p.previous()
 		right := p.comparison()
 		return &expressionEquality{&exp{expr, right, operator}}
@@ -232,7 +232,7 @@ func (p *parser) equality() expression {
 
 func (p *parser) comparison() expression {
 	expr := p.term()
-	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
+	for p.match(Greater, GreaterEqual, Less, LessEqual) {
 		operator := p.previous()
 		right := p.term()
 		expr = &expressionComparison{&exp{expr, right, operator}}
@@ -242,12 +242,12 @@ func (p *parser) comparison() expression {
 
 func (p *parser) term() expression {
 	expr := p.factor()
-	for p.match(PLUS) {
+	for p.match(Plus) {
 		operator := p.previous()
 		right := p.factor()
 		expr = &expressionTerm{&exp{expr, right, operator}}
 	}
-	for p.match(MINUS) {
+	for p.match(Minus) {
 		operator := p.previous()
 		right := p.factor()
 		expr = &expressionTerm{&exp{expr, right, operator}}
@@ -258,12 +258,12 @@ func (p *parser) term() expression {
 
 func (p *parser) factor() expression {
 	expr := p.unary()
-	for p.match(STAR) {
+	for p.match(Star) {
 		operator := p.previous()
 		right := p.unary()
 		expr = &expressionFactor{&exp{expr, right, operator}}
 	}
-	for p.match(SLASH) {
+	for p.match(Slash) {
 		operator := p.previous()
 		right := p.unary()
 		expr = &expressionFactor{&exp{expr, right, operator}}
@@ -272,12 +272,12 @@ func (p *parser) factor() expression {
 }
 
 func (p *parser) unary() expression {
-	if p.match(BANG) {
+	if p.match(Bang) {
 		operator := p.previous()
 		right := p.unary()
 		return &expressionUnary{&exp{nil, right, operator}}
 	}
-	if p.match(MINUS) {
+	if p.match(Minus) {
 		operator := p.previous()
 		right := p.unary()
 		return &expressionUnary{&exp{nil, right, operator}}
@@ -289,14 +289,14 @@ func (p *parser) unary() expression {
 func (p *parser) call() expression {
 	expr := p.primary()
 	for {
-		if p.match(LEFT_PAREN) {
+		if p.match(LeftParen) {
 			expr = p.finishCall(expr)
-		} else if p.match(DOT) {
-			name := p.consume(IDENTIFIER, "Expect property name after '.'.")
+		} else if p.match(Dot) {
+			name := p.consume(Identifier, "Expect property name after '.'.")
 			expr = &expressionGet{expr, name}
-		} else if p.match(LEFT_BRACKET) {
+		} else if p.match(LeftBracket) {
 			index := p.expression()
-			p.consume(RIGHT_BRACKET, "Expect ']' after index.")
+			p.consume(RightBracket, "Expect ']' after index.")
 			expr = &expressionIndex{expr, index}
 		} else {
 			break
@@ -307,62 +307,62 @@ func (p *parser) call() expression {
 
 func (p *parser) finishCall(callee expression) expression {
 	args := []expression{}
-	if !p.check(RIGHT_PAREN) {
+	if !p.check(RightParen) {
 		for {
 			if len(args) >= 255 {
 				err := newError("Can't have more than 255 arguments.", p.peek().line)
 				p.parseErrors = append(p.parseErrors, err)
 			}
 			args = append(args, p.expression())
-			if !p.match(COMMA) {
+			if !p.match(Comma) {
 				break
 			}
 		}
 	}
-	p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
+	p.consume(RightParen, "Expect ')' after arguments.")
 	return &expressionCall{callee, args}
 }
 
 func (p *parser) primary() expression {
-	if p.match(FALSE) {
+	if p.match(False) {
 		return &expressionLiteral{&exp{nil, nil, p.previous()}, false}
 	}
-	if p.match(TRUE) {
+	if p.match(True) {
 		return &expressionLiteral{&exp{nil, nil, p.previous()}, true}
 	}
-	if p.match(NIL) {
+	if p.match(Nil) {
 		return &expressionLiteral{&exp{nil, nil, p.previous()}, nil}
 	}
-	if p.match(NUMBER) {
+	if p.match(Number) {
 		val := p.getFloatFromToken(p.previous().literal)
 		return &expressionLiteral{&exp{nil, nil, p.previous()}, val}
 	}
-	if p.match(STRING) {
+	if p.match(String) {
 		val := p.previous().literal
 		return &expressionLiteral{&exp{nil, nil, p.previous()}, val}
 	}
-	if p.match(LEFT_BRACKET) {
+	if p.match(LeftBracket) {
 		items := []expression{}
-		for !p.check(RIGHT_BRACKET) && !p.isAtEnd() {
+		for !p.check(RightBracket) && !p.isAtEnd() {
 			item := p.expression()
 			items = append(items, item)
-			if p.peek().tokenType != RIGHT_BRACKET {
-				p.consume(COMMA, "',' expected between array elements.")
+			if p.peek().tokenType != RightBracket {
+				p.consume(Comma, "',' expected between array elements.")
 			}
 		}
-		p.consume(RIGHT_BRACKET, "']' expected after array elements.")
+		p.consume(RightBracket, "']' expected after array elements.")
 		expr := &expressionLiteral{&exp{nil, nil, p.previous()}, items}
 		return expr
 	}
-	if p.match(IDENTIFIER) {
+	if p.match(Identifier) {
 		return &expressionVar{&exp{nil, nil, p.previous()}}
 	}
-	if p.match(THIS) {
+	if p.match(This) {
 		return &expressionThis{&exp{nil, nil, p.previous()}}
 	}
-	if p.match(LEFT_PAREN) {
+	if p.match(LeftParen) {
 		expr := &expressionGroup{p.expression()}
-		p.consume(RIGHT_PAREN, "Unmatched parenthesis.")
+		p.consume(RightParen, "Unmatched parenthesis.")
 		return expr
 	}
 	err := newError("at '"+p.peek().lexeme+"' - Expected expression.", p.peek().line)
@@ -419,17 +419,17 @@ func (p *parser) consume(t string, err string) token {
 func (p *parser) synchronize() {
 	p.advance()
 	for !p.isAtEnd() {
-		if p.previous().tokenType == SEMICOLON {
+		if p.previous().tokenType == Semicolon {
 			return
 		}
 		switch p.peek().tokenType {
-		case CLASS:
-		case FUN:
-		case VAR:
-		case FOR:
-		case IF:
-		case WHILE:
-		case RETURN:
+		case Class:
+		case Fun:
+		case Var:
+		case For:
+		case If:
+		case While:
+		case Return:
 			return
 		}
 		p.advance()

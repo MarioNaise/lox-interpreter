@@ -12,14 +12,14 @@ type (
 )
 
 const (
-	fn_none fnType = iota
+	fnNone fnType = iota
 	function
 	initializer
 	method
 )
 
 const (
-	class_none classType = iota
+	classNone classType = iota
 	class
 )
 
@@ -31,7 +31,7 @@ type resolver struct {
 }
 
 func newResolver(i *interpreter) *resolver {
-	r := resolver{i, list.New(), fn_none, class_none}
+	r := resolver{i, list.New(), fnNone, classNone}
 	return &r
 }
 
@@ -60,11 +60,11 @@ func (r *resolver) visitClassStmt(stmt *stmtClass) {
 	r.define(stmt.name)
 	r.beginScope()
 	scope := r.scopes.Back().Value.(map[string]bool)
-	scope[strings.ToLower(THIS)] = true
+	scope[strings.ToLower(This)] = true
 	r.endScope()
 	for _, m := range stmt.methods {
 		declaration := method
-		if m.name.lexeme == INIT {
+		if m.name.lexeme == Init {
 			declaration = initializer
 		}
 		r.resolveFunction(declaration, m)
@@ -128,7 +128,7 @@ func (r *resolver) visitIfStmt(stmt *stmtIf) {
 }
 
 func (r *resolver) visitReturnStmt(stmt *stmtReturn) {
-	if r.currentFun == fn_none {
+	if r.currentFun == fnNone {
 		err := newError("Can't return from top-level code.", stmt.line)
 		panic(err)
 	}

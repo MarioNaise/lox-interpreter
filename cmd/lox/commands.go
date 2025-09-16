@@ -1,3 +1,4 @@
+// Package lox provides functionality to interpret Lox language code.
 package lox
 
 import (

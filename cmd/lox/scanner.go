@@ -6,20 +6,20 @@ import (
 )
 
 var keywords = map[string]string{
-	strings.ToLower(AND):    AND,
-	strings.ToLower(CLASS):  CLASS,
-	strings.ToLower(ELSE):   ELSE,
-	strings.ToLower(FALSE):  FALSE,
-	strings.ToLower(FOR):    FOR,
-	strings.ToLower(FUN):    FUN,
-	strings.ToLower(IF):     IF,
-	strings.ToLower(NIL):    NIL,
-	strings.ToLower(OR):     OR,
-	strings.ToLower(RETURN): RETURN,
-	strings.ToLower(THIS):   THIS,
-	strings.ToLower(TRUE):   TRUE,
-	strings.ToLower(VAR):    VAR,
-	strings.ToLower(WHILE):  WHILE,
+	strings.ToLower(And):    And,
+	strings.ToLower(Class):  Class,
+	strings.ToLower(Else):   Else,
+	strings.ToLower(False):  False,
+	strings.ToLower(For):    For,
+	strings.ToLower(Fun):    Fun,
+	strings.ToLower(If):     If,
+	strings.ToLower(Nil):    Nil,
+	strings.ToLower(Or):     Or,
+	strings.ToLower(Return): Return,
+	strings.ToLower(This):   This,
+	strings.ToLower(True):   True,
+	strings.ToLower(Var):    Var,
+	strings.ToLower(While):  While,
 }
 
 type scanner struct {
@@ -41,7 +41,7 @@ func (s *scanner) tokenize() ([]token, []loxError) {
 		s.start = s.current
 		s.scanToken()
 	}
-	s.tokens = append(s.tokens, newToken(EOF, string('\000'), NONE, s.line))
+	s.tokens = append(s.tokens, newToken(EOF, string('\000'), None, s.line))
 	return s.tokens, s.scanErrors
 }
 
@@ -49,52 +49,52 @@ func (s *scanner) scanToken() {
 	c := s.advance()
 	switch c {
 	case '[':
-		s.addToken(LEFT_BRACKET, NONE)
+		s.addToken(LeftBracket, None)
 	case ']':
-		s.addToken(RIGHT_BRACKET, NONE)
+		s.addToken(RightBracket, None)
 	case '(':
-		s.addToken(LEFT_PAREN, NONE)
+		s.addToken(LeftParen, None)
 	case ')':
-		s.addToken(RIGHT_PAREN, NONE)
+		s.addToken(RightParen, None)
 	case '{':
-		s.addToken(LEFT_BRACE, NONE)
+		s.addToken(LeftBrace, None)
 	case '}':
-		s.addToken(RIGHT_BRACE, NONE)
+		s.addToken(RightBrace, None)
 	case ',':
-		s.addToken(COMMA, NONE)
+		s.addToken(Comma, None)
 	case '.':
-		s.addToken(DOT, NONE)
+		s.addToken(Dot, None)
 	case '-':
-		s.addToken(MINUS, NONE)
+		s.addToken(Minus, None)
 	case '+':
-		s.addToken(PLUS, NONE)
+		s.addToken(Plus, None)
 	case ';':
-		s.addToken(SEMICOLON, NONE)
+		s.addToken(Semicolon, None)
 	case '*':
-		s.addToken(STAR, NONE)
+		s.addToken(Star, None)
 	case '!':
 		if s.match('=') {
-			s.addToken(BANG_EQUAL, NONE)
+			s.addToken(BangEqual, None)
 		} else {
-			s.addToken(BANG, NONE)
+			s.addToken(Bang, None)
 		}
 	case '=':
 		if s.match('=') {
-			s.addToken(EQUAL_EQUAL, NONE)
+			s.addToken(EqualEqual, None)
 		} else {
-			s.addToken(EQUAL, NONE)
+			s.addToken(Equal, None)
 		}
 	case '<':
 		if s.match('=') {
-			s.addToken(LESS_EQUAL, NONE)
+			s.addToken(LessEqual, None)
 		} else {
-			s.addToken(LESS, NONE)
+			s.addToken(Less, None)
 		}
 	case '>':
 		if s.match('=') {
-			s.addToken(GREATER_EQUAL, NONE)
+			s.addToken(GreaterEqual, None)
 		} else {
-			s.addToken(GREATER, NONE)
+			s.addToken(Greater, None)
 		}
 	case '/':
 		if s.match('/') {
@@ -102,7 +102,7 @@ func (s *scanner) scanToken() {
 				s.advance()
 			}
 		} else {
-			s.addToken(SLASH, NONE)
+			s.addToken(Slash, None)
 		}
 	case ' ':
 	case '\r':
@@ -175,7 +175,7 @@ func (s *scanner) string() {
 
 	s.advance()
 	value := s.source[s.start+1 : s.current-1]
-	s.addToken(STRING, string(value))
+	s.addToken(String, string(value))
 }
 
 func (s *scanner) number() {
@@ -188,7 +188,7 @@ func (s *scanner) number() {
 			s.advance()
 		}
 	}
-	s.addToken(NUMBER, string(s.source[s.start:s.current]))
+	s.addToken(Number, string(s.source[s.start:s.current]))
 }
 
 func (s *scanner) identifier() {
@@ -198,9 +198,9 @@ func (s *scanner) identifier() {
 	text := string(s.source[s.start:s.current])
 	tokenType, ok := keywords[text]
 	if !ok {
-		tokenType = IDENTIFIER
+		tokenType = Identifier
 	}
-	s.addToken(tokenType, NONE)
+	s.addToken(tokenType, None)
 }
 
 func (s *scanner) isDigit(c rune) bool {

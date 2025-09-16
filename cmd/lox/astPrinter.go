@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	BLOCK     = "BLOCK"
-	BLOCK_END = "BLOCK_END"
-	GROUP     = "GROUP"
+	Block    = "BLOCK"
+	BlockEnd = "BLOCK_END"
+	Group    = "GROUP"
 )
 
 type astPrinter struct{}
@@ -27,15 +27,15 @@ func (a *astPrinter) printExpr(e expression) {
 }
 
 func (a *astPrinter) visitClassStmt(stmt *stmtClass) {
-	fmt.Println(CLASS + ":" + stmt.name.lexeme)
+	fmt.Println(Class + ":" + stmt.name.lexeme)
 	for _, method := range stmt.methods {
 		method.accept(a)
 	}
-	fmt.Println(CLASS + "_END")
+	fmt.Println(Class + "_END")
 }
 
 func (a *astPrinter) visitFunStmt(s *stmtFun) {
-	a.prefix(fmt.Sprintf("%s:%s", FUN, s.name.lexeme))
+	a.prefix(fmt.Sprintf("%s:%s", Fun, s.name.lexeme))
 	p := []string{}
 	for _, param := range s.params {
 		p = append(p, param.lexeme)
@@ -45,7 +45,7 @@ func (a *astPrinter) visitFunStmt(s *stmtFun) {
 }
 
 func (a *astPrinter) visitVarStmt(s *stmtVar) {
-	a.prefix(VAR + ":" + s.name.lexeme)
+	a.prefix(Var + ":" + s.name.lexeme)
 	if s.initializer == nil {
 		fmt.Println()
 	}
@@ -53,32 +53,32 @@ func (a *astPrinter) visitVarStmt(s *stmtVar) {
 }
 
 func (a *astPrinter) visitIfStmt(s *stmtIf) {
-	a.prefix(IF)
+	a.prefix(If)
 	a.printExpr(s.condition)
 	s.thenBranch.accept(a)
 	if s.elseBranch != nil {
-		fmt.Println(ELSE)
+		fmt.Println(Else)
 		s.elseBranch.accept(a)
 	}
 }
 
 func (a *astPrinter) visitReturnStmt(s *stmtReturn) {
-	a.prefix(RETURN)
+	a.prefix(Return)
 	a.printExpr(s.value)
 }
 
 func (a *astPrinter) visitWhileStmt(s *stmtWhile) {
-	a.prefix(WHILE)
+	a.prefix(While)
 	a.printExpr(s.condition)
 	s.body.accept(a)
 }
 
 func (a *astPrinter) visitBlockStmt(s *stmtBlock) {
-	fmt.Println(BLOCK)
+	fmt.Println(Block)
 	for _, stmt := range s.statements {
 		stmt.accept(a)
 	}
-	fmt.Println(BLOCK_END)
+	fmt.Println(BlockEnd)
 }
 
 func (a *astPrinter) visitExprStmt(s *stmtExpr) {
@@ -90,11 +90,11 @@ func (a *astPrinter) visitThis(e *expressionThis) any {
 }
 
 func (a *astPrinter) visitVar(e *expressionVar) any {
-	return fmt.Sprintf("%s %s", VAR, e.lexeme())
+	return fmt.Sprintf("%s %s", Var, e.lexeme())
 }
 
 func (a *astPrinter) visitAssignment(e *expressionAssignment) any {
-	return fmt.Sprintf("%s:%s %v", VAR, e.expr().lexeme(), e.next().accept(a))
+	return fmt.Sprintf("%s:%s %v", Var, e.expr().lexeme(), e.next().accept(a))
 }
 
 func (a *astPrinter) visitSet(e *expressionSet) any {
@@ -147,17 +147,17 @@ func (a *astPrinter) visitLiteral(e *expressionLiteral) any {
 }
 
 func (a *astPrinter) visitGroup(e *expressionGroup) any {
-	return a.parenthesized(GROUP, e.expression)
+	return a.parenthesized(Group, e.expression)
 }
 
 func (a *astPrinter) visitExpr(e *exp) any { return "" }
 
 func (a *astPrinter) primary(e *expressionLiteral) any {
-	if e.token().tokenType == RIGHT_BRACKET {
+	if e.token().tokenType == RightBracket {
 		joined := a.joinExprs(e.val.([]expression))
 		return fmt.Sprintf("[%s]", joined)
 	}
-	if e.literal() == NONE {
+	if e.literal() == None {
 		return e.lexeme()
 	}
 	return e.literal()

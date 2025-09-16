@@ -48,7 +48,7 @@ func (i *interpreter) visitClassStmt(stmt *stmtClass) {
 	i.environment.define(stmt.name.lexeme, nil)
 	methods := make(map[string]*loxFunction)
 	for _, m := range stmt.methods {
-		fun := &loxFunction{newEnvironment(i.environment), m, m.name.lexeme == INIT}
+		fun := &loxFunction{newEnvironment(i.environment), m, m.name.lexeme == Init}
 		methods[m.name.lexeme] = fun
 	}
 	class := &loxClass{methods, stmt.name.lexeme}
@@ -146,7 +146,7 @@ func (i *interpreter) visitSet(expr *expressionSet) any {
 }
 
 func (i *interpreter) visitLogical(e *expressionLogical) any {
-	if e.tokenType() == OR {
+	if e.tokenType() == Or {
 		if i.isTruthy(e.expr()) {
 			return i.evaluate(e.expr())
 		}
@@ -160,9 +160,9 @@ func (i *interpreter) visitEquality(e *expressionEquality) any {
 	left := i.evaluate(e.expr())
 	right := i.evaluate(e.next())
 	switch e.tokenType() {
-	case EQUAL_EQUAL:
+	case EqualEqual:
 		return left == right
-	case BANG_EQUAL:
+	case BangEqual:
 		return left != right
 	}
 	return nil
@@ -172,13 +172,13 @@ func (i *interpreter) visitComparison(e *expressionComparison) any {
 	left := i.parseFloat(e.expr())
 	right := i.parseFloat(e.next())
 	switch e.tokenType() {
-	case LESS:
+	case Less:
 		return left < right
-	case LESS_EQUAL:
+	case LessEqual:
 		return left <= right
-	case GREATER:
+	case Greater:
 		return left > right
-	case GREATER_EQUAL:
+	case GreaterEqual:
 		return left >= right
 	}
 	return nil
@@ -186,14 +186,14 @@ func (i *interpreter) visitComparison(e *expressionComparison) any {
 
 func (i *interpreter) visitTerm(e *expressionTerm) any {
 	switch e.tokenType() {
-	case PLUS:
+	case Plus:
 		if ok, left, right := i.evaluatesToString(e); ok {
 			return fmt.Sprintf("%v%v", left, right)
 		}
 		left := i.parseFloat(e.expr())
 		right := i.parseFloat(e.next())
 		return left + right
-	case MINUS:
+	case Minus:
 		left := i.parseFloat(e.expr())
 		right := i.parseFloat(e.next())
 		return left - right
@@ -205,9 +205,9 @@ func (i *interpreter) visitFactor(e *expressionFactor) any {
 	left := i.parseFloat(e.expr())
 	right := i.parseFloat(e.next())
 	switch e.tokenType() {
-	case STAR:
+	case Star:
 		return left * right
-	case SLASH:
+	case Slash:
 		return left / right
 	}
 	return ""
@@ -215,9 +215,9 @@ func (i *interpreter) visitFactor(e *expressionFactor) any {
 
 func (i *interpreter) visitUnary(e *expressionUnary) any {
 	switch e.tokenType() {
-	case BANG:
+	case Bang:
 		return !i.isTruthy(e.next())
-	case MINUS:
+	case Minus:
 		val := i.parseFloat(e.next())
 		return -val
 	default:

@@ -33,7 +33,7 @@ type builtin struct {
 
 func (c *loxClass) String() string { return "<class " + c.name + ">" }
 func (c *loxClass) arity() int {
-	initializer := c.findMethod(INIT)
+	initializer := c.findMethod(Init)
 	if initializer == nil {
 		return 0
 	}
@@ -42,7 +42,7 @@ func (c *loxClass) arity() int {
 
 func (c *loxClass) call(i *interpreter, args []any, t token) any {
 	instance := &loxInstance{c, make(map[string]any)}
-	initializer := c.findMethod(INIT)
+	initializer := c.findMethod(Init)
 	if initializer != nil {
 		initializer.bind(instance).call(i, args, t)
 	}
@@ -76,7 +76,7 @@ func (i *loxInstance) set(name token, value any) {
 
 func (f *loxFunction) bind(i *loxInstance) *loxFunction {
 	env := newEnvironment(f.closure)
-	env.define(strings.ToLower(THIS), i)
+	env.define(strings.ToLower(This), i)
 	return &loxFunction{env, f.declaration, f.isInitializer}
 }
 
@@ -89,7 +89,7 @@ func (f *loxFunction) call(i *interpreter, args []any, t token) (value any) {
 			case returnValue:
 				value = r.value
 				if f.isInitializer {
-					value = f.closure.getAt(0, token{lexeme: strings.ToLower(THIS)})
+					value = f.closure.getAt(0, token{lexeme: strings.ToLower(This)})
 				}
 				return
 			default:
@@ -102,7 +102,7 @@ func (f *loxFunction) call(i *interpreter, args []any, t token) (value any) {
 	}
 	block := f.declaration.body.(*stmtBlock)
 	i.executeBlock(block.statements, newEnvironment(f.closure))
-	return
+	return value
 }
 
 func (b *builtin) String() string                               { return "<native fn>" }
