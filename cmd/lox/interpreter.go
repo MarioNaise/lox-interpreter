@@ -292,8 +292,8 @@ func (i *interpreter) visitSetIndex(e *expressionSetIndex) any {
 	switch arr := e.expression.accept(i).(type) {
 	case *[]any:
 		a := *arr
-		if !ok {
-			return nil
+		if index < 0 {
+			index = float64(len(a)) + index
 		}
 		if index < 0 {
 			return nil
