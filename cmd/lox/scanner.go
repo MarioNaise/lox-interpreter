@@ -161,6 +161,7 @@ func (s *scanner) peekNext() rune {
 }
 
 func (s *scanner) string() {
+	currentLine := s.line
 	for s.peek() != '"' && !s.isAtEnd() {
 		if s.peek() == '\n' {
 			s.line++
@@ -169,7 +170,7 @@ func (s *scanner) string() {
 	}
 
 	if s.isAtEnd() {
-		s.scanErrors = append(s.scanErrors, newError("Unterminated string.", s.line))
+		s.scanErrors = append(s.scanErrors, newError("Unterminated string.", currentLine))
 		return
 	}
 

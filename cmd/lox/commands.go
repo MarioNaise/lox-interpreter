@@ -74,6 +74,23 @@ func Parse(filePath string) bool {
 	return len(errs) == 0
 }
 
+func Lint(filePath string) bool {
+	str := getFileContent(filePath)
+	p := newParser(str)
+	_, errs := p.parse()
+	if len(errs) != 0 {
+		fmt.Println("[")
+		for i, err := range errs {
+			fmt.Printf("{\"file\":\"%s\",\"lnum\":%d,\"col\":0,\"severity\":1,\"message\":\"%s\"}", filePath, err.line-1, err.message)
+			if i != len(errs)-1 {
+				fmt.Printf(",\n")
+			}
+		}
+		fmt.Println("\n]")
+	}
+	return true
+}
+
 func Evaluate(filePath string) bool {
 	defer exitOnError()
 	str := getFileContent(filePath)

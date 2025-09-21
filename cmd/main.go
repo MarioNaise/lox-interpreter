@@ -26,6 +26,7 @@ func main() {
 	handlers := map[string]func(string) bool{
 		"tokenize": lox.Tokenize,
 		"parse":    lox.Parse,
+		"lint":     lox.Lint,
 		"evaluate": lox.Evaluate,
 		"run":      lox.Run,
 	}
