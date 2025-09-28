@@ -20,7 +20,11 @@ func newParser(str string) *parser {
 func (p *parser) parse() ([]stmt, []loxError) {
 	p.tokenize()
 	for !p.isAtEnd() {
-		p.program = append(p.program, p.declaration())
+		decl := p.declaration()
+		if d, ok := decl.(*stmtExpr); ok && d.initializer == nil {
+			break
+		}
+		p.program = append(p.program, decl)
 	}
 	return p.program, append(p.scanErrors, p.parseErrors...)
 }
@@ -345,6 +349,9 @@ func (p *parser) primary() expression {
 		items := []expression{}
 		for !p.check(RightBracket) && !p.isAtEnd() {
 			item := p.expression()
+			if item == nil {
+				break
+			}
 			items = append(items, item)
 			if p.peek().tokenType != RightBracket {
 				p.consume(Comma, "',' expected between array elements.")
