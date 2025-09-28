@@ -1,0 +1,7 @@
+fun map(array, func){
+  var result = [];
+  for (var i = 0; i < length(array); i = i + 1) {
+    result[i] = func(array[i], i);
+  }
+  return result;
+}

@@ -1,0 +1,6 @@
+fun reduce(array, func, initial) {
+  for (var i = 0; i < length(array); i = i + 1) {
+    initial = func(initial, array[i], i);
+  }
+  return initial;
+}

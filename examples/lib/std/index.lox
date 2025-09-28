@@ -1,0 +1,2 @@
+load("slice.lox");
+load("dictionary.lox");

@@ -1,0 +1,3 @@
+load("filter.lox");
+load("map.lox");
+load("reduce.lox");

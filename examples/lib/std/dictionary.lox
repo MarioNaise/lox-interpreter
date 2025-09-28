@@ -1,0 +1,37 @@
+class  Dictionary {
+  init(){
+    this.entries = [];
+  }
+
+  delete(key){
+    var new = [];
+    for (var i = 0; i < length(this.entries); i = i + 1) {
+      var pair = this.entries[i];
+      if (pair[0] != key) {
+        new[length(new)] = pair;
+      }
+    }
+    this.entries = new;
+  }
+
+  get(key){
+    for (var i = 0; i < length(this.entries); i = i + 1) {
+      var pair = this.entries[i];
+      if (pair[0] == key) {
+        return pair[1];
+      }
+    }
+    return nil;
+  }
+
+  set(key, value){
+    for (var i = 0; i < length(this.entries); i = i + 1) {
+      var pair = this.entries[i];
+      if (pair[0] == key) {
+        pair[1] = value;
+        return;
+      }
+    }
+    this.entries[length(this.entries)] = [key, value];
+  }
+}

@@ -1,0 +1,9 @@
+fun filter(array, func){
+  var result = [];
+  for (var i = 0; i < length(array); i = i + 1) {
+    if (func(array[i], i)) {
+      result[length(result)] = array[i];
+    }
+  }
+  return result;
+}

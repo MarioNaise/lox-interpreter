@@ -1,15 +1,13 @@
 fun start(){
-
   load("greet.lox");
 
   print("Are you ready to play a game?");
+
   var answer = read();
   if(answer == "yes"){
     print("Great! Let's play a game!");
     firstGame();
-  } else {
-    print("Oh, that's too bad. Maybe next time.");
-  }
+  } else print("Oh, that's too bad. Maybe next time.");
 }
 
 fun firstGame(){
@@ -28,11 +26,8 @@ fun firstGame(){
   quiz();
   print("Would you like to play something else?");
   answer = read();
-  if(answer == "yes"){
-    secondGame();
-  } else {
-    print("Thanks for playing!");
-  }
+  if(answer == "yes") secondGame();
+  else print("Thanks for playing!");
 }
 
 fun secondGame(){

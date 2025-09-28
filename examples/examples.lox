@@ -1,0 +1,34 @@
+load("lib/math/index.lox");
+load("lib/std/index.lox");
+load("lib/array/index.lox");
+
+// loaded from lib/math
+print(modulo(14,3));                  // 2
+print(power(3,3));                    // 27
+
+// loaded from lib/std
+print(slice([1,2,3,4,5], -3, 4));    // [3, 4]
+print(slice("hello", -5, 3));        // "hel"
+
+var contacts = Dictionary();
+contacts.set("Bob", "555-1234");
+contacts.set("Rob", "555-2345");
+print(contacts.get("Bob"));         // "555-1234"
+contacts.delete("Bob");
+print(contacts.get("Bob"));         // <nil>
+
+fun even(x, _i) {
+  return !modulo(x, 2);
+}
+fun odd(x, _i) {
+  return !!modulo(x, 2);
+}
+fun sum(acc, x, _i) {
+  return acc + x;
+}
+
+// loaded from lib/array
+print(map([1,2,3,4,5], power));      // [1, 2, 9, 64, 625]
+print(filter([1,2,3,4,5], even));    // [2, 4]
+print(filter([1,2,3,4,5], odd));     // [1, 3, 5]
+print(reduce([0,1,2,3,4], sum, 0));  // 10
