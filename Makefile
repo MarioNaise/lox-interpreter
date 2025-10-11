@@ -8,4 +8,4 @@ vet: fmt
 	go vet ./...
 
 build: vet
-	go build -o lox ./cmd/main.go
+	go install

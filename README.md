@@ -166,11 +166,23 @@ To run the interpreter, follow these steps:
 2. Build the project:
 
    ```bash
-   go build -o lox ./cmd/main.go
+   go build -o lox.out .
+   ```
+
+   - or install it to your $GOBIN
+
+   ```bash
+   go install
    ```
 
 3. Run the interpreter:
 
    ```bash
-   ./lox
+   ./lox.out
+   ```
+
+   or if installed:
+
+   ```bash
+   lox
    ```
