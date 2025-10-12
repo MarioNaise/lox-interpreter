@@ -119,6 +119,7 @@ func (p *parser) forStmt() stmt {
 		initializer = p.varDeclaration()
 	} else {
 		initializer = &stmtExpr{p.expression()}
+		p.consume(Semicolon, "Expect ';' after loop initializer.")
 	}
 	var condition expression
 	if !p.check(Semicolon) {
@@ -229,7 +230,7 @@ func (p *parser) equality() expression {
 	for p.match(BangEqual, EqualEqual) {
 		operator := p.previous()
 		right := p.comparison()
-		return &expressionEquality{&exp{expr, right, operator}}
+		expr = &expressionEquality{&exp{expr, right, operator}}
 	}
 	return expr
 }
@@ -246,12 +247,7 @@ func (p *parser) comparison() expression {
 
 func (p *parser) term() expression {
 	expr := p.factor()
-	for p.match(Plus) {
-		operator := p.previous()
-		right := p.factor()
-		expr = &expressionTerm{&exp{expr, right, operator}}
-	}
-	for p.match(Minus) {
+	for p.match(Plus, Minus) {
 		operator := p.previous()
 		right := p.factor()
 		expr = &expressionTerm{&exp{expr, right, operator}}
@@ -262,12 +258,7 @@ func (p *parser) term() expression {
 
 func (p *parser) factor() expression {
 	expr := p.unary()
-	for p.match(Star) {
-		operator := p.previous()
-		right := p.unary()
-		expr = &expressionFactor{&exp{expr, right, operator}}
-	}
-	for p.match(Slash) {
+	for p.match(Star, Slash) {
 		operator := p.previous()
 		right := p.unary()
 		expr = &expressionFactor{&exp{expr, right, operator}}
@@ -430,13 +421,7 @@ func (p *parser) synchronize() {
 			return
 		}
 		switch p.peek().tokenType {
-		case Class:
-		case Fun:
-		case Var:
-		case For:
-		case If:
-		case While:
-		case Return:
+		case Class, Fun, Var, For, If, While, Return:
 			return
 		}
 		p.advance()
