@@ -144,6 +144,7 @@ arr[-10] = false; // does nothing
 - `lox parse <filename>`: Prints the parsed AST (kinda improvised).
 - `lox evaluate <filename>`: Evaluates a single expression
   from a file (semicolon optional).
+- `lox lint <filename>`: Lints the file and prints errors in JSON format.
 - `lox run <filename>` or `lox <filename>`: Runs the file.
 - `lox`: Starts an interactive REPL session.
   - Interprets statements and expressions.
@@ -186,3 +187,75 @@ To run the interpreter, follow these steps:
    ```bash
    lox
    ```
+
+## Syntax Highlighting and Linting
+
+Enable syntax highlighting in your code editor with [tree-sitter-lox](https://github.com/MarioNaise/tree-sitter-lox)
+Example highlighting for NeoVim with [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter):
+
+```lua
+-- add tree-sitter parser for lox
+vim.api.nvim_create_autocmd("User", {
+  pattern = "TSUpdate",
+  callback = function()
+    require("nvim-treesitter.parsers").lox = {
+      install_info = {
+        url = "https://github.com/MarioNaise/tree-sitter-lox",
+        generate = true,
+        queries = "queries",
+      },
+    }
+  end,
+})
+
+-- add lox filetype (necessary for linting AND highlighting)
+vim.filetype.add({
+  extension = { lox = "lox" },
+})
+```
+
+- then run `:TSInstall lox` in NeoVim to install the parser
+
+Example linting for NeoVim with [LazyVim](https://github.com/LazyVim/LazyVim) and [nvim-lint](https://github.com/mfussenegger/nvim-lint)
+
+> [!NOTE]: This example assumes you have the lox binary in your PATH. If not, change the `cmd` field to the path of the binary.
+
+```lua
+return {
+  "mfussenegger/nvim-lint",
+  config = function()
+    local lint = require("lint")
+    local lox = "lox"
+
+    lint.linters.lox = {
+      name = lox,
+      cmd = lox,
+      stdin = false,
+      append_fname = true,
+      args = { "lint" },
+      parser = function(output)
+        local ok, decoded = pcall(vim.json.decode, output)
+        if not ok or type(decoded) ~= "table" then
+          return {}
+        end
+        return decoded
+      end,
+    }
+
+    lint.linters_by_ft = {
+      lox = { lox },
+    }
+
+    -- auto-run on save, buffer enter & text changes
+    vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "TextChanged", "InsertLeave" }, {
+      group = vim.api.nvim_create_augroup("LoxLinting", { clear = true }),
+      pattern = "*." .. lox,
+      callback = function()
+        lint.try_lint()
+      end,
+    })
+  end,
+}
+```
+
+<img width="450" height="250" alt="image" src="https://github.com/user-attachments/assets/a780eac6-ed01-4aee-873e-04f43bf5ef93" />
