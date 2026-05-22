@@ -1,4 +1,4 @@
-package main
+package vm
 
 type opCode byte
 
@@ -18,10 +18,12 @@ type chunk struct {
 	constants valueArray
 }
 
-func (c *chunk) init() {
+func newChunk() *chunk {
+	c := new(chunk)
 	c.code = make([]byte, 0)
 	c.lines = make([]int, 0)
-	c.constants.init()
+	c.constants = make(valueArray, 0)
+	return c
 }
 
 func (c *chunk) write(b byte, line int) {

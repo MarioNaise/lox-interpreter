@@ -5,11 +5,17 @@ import (
 	"os"
 
 	"lox/lox"
+	"lox/vm"
 )
 
 func main() {
 	if len(os.Args) == 1 {
 		lox.Repl()
+		return
+	}
+
+	if os.Args[1] == "vm" {
+		vm.Run(os.Args[2:])
 		return
 	}
 

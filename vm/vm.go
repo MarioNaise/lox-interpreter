@@ -1,8 +1,4 @@
-package main
-
-import (
-	"fmt"
-)
+package vm
 
 type interpretResult byte
 
@@ -15,20 +11,21 @@ const (
 )
 
 type vm struct {
+	stack    [stackMax]value
+	chunk    *chunk
 	ip       int
 	stackTop int
-	chunk    *chunk
-	stack    [stackMax]value
 }
 
-func (vm *vm) init() {
-	vm.chunk = new(chunk)
-	vm.chunk.init()
+func newVM() *vm {
+	vm := new(vm)
+	vm.chunk = newChunk()
+	return vm
 }
 
-func (vm *vm) interpret(chunk *chunk) interpretResult {
-	vm.chunk = chunk
-	return vm.run()
+func (vm *vm) interpret(src string) interpretResult {
+	compile(src)
+	return interpretOk
 }
 
 func (vm *vm) readByte() byte {
@@ -75,26 +72,26 @@ func (vm *vm) binaryOp(operator opCode) {
 	vm.push(result)
 }
 
-func (vm *vm) run() interpretResult {
-	for {
-		if debug {
-			fmt.Printf("          ")
-			fmt.Printf("%v\n", vm.stack[:vm.stackTop])
-			vm.chunk.disassembleInstruction(vm.ip)
-		}
-		instruction := vm.readByte()
-		switch opCode(instruction) {
-		case opConstant:
-			constant := vm.readConstant()
-			fmt.Println("opConstant", constant)
-			vm.push(constant)
-		case opAdd, opSubtract, opMultiply, opDivide:
-			vm.binaryOp(opCode(instruction))
-		case opNegate:
-			vm.push(-vm.pop())
-		case opReturn:
-			fmt.Println("opReturn", vm.pop())
-			return interpretOk
-		}
-	}
-}
+// func (vm *vm) run() interpretResult {
+// 	for {
+// 		if debug {
+// 			fmt.Printf("          ")
+// 			fmt.Println(vm.stack[:vm.stackTop])
+// 			vm.chunk.disassembleInstruction(vm.ip)
+// 		}
+// 		instruction := vm.readByte()
+// 		switch opCode(instruction) {
+// 		case opConstant:
+// 			constant := vm.readConstant()
+// 			fmt.Println("opConstant", constant)
+// 			vm.push(constant)
+// 		case opAdd, opSubtract, opMultiply, opDivide:
+// 			vm.binaryOp(opCode(instruction))
+// 		case opNegate:
+// 			vm.push(-vm.pop())
+// 		case opReturn:
+// 			fmt.Println("opReturn", vm.pop())
+// 			return interpretOk
+// 		}
+// 	}
+// }
