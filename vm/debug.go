@@ -2,6 +2,8 @@ package main
 
 import "fmt"
 
+const debug = true
+
 func (c *chunk) disassemble(s string) {
 	fmt.Printf("== %s ==\n", s)
 
@@ -23,6 +25,16 @@ func (c *chunk) disassembleInstruction(offset int) int {
 	switch opCode(instruction) {
 	case opConstant:
 		return c.constantInstruction("OP_CONSTANT", offset)
+	case opAdd:
+		return c.simpleInstruction("OP_ADD", offset)
+	case opSubtract:
+		return c.simpleInstruction("OP_SUBTRACT", offset)
+	case opMultiply:
+		return c.simpleInstruction("OP_MULTIPLY", offset)
+	case opDivide:
+		return c.simpleInstruction("OP_DIVIDE", offset)
+	case opNegate:
+		return c.simpleInstruction("OP_NEGATE", offset)
 	case opReturn:
 		return c.simpleInstruction("OP_RETURN", offset)
 	default:
