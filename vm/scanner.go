@@ -7,8 +7,11 @@ type scanner struct {
 	src     string
 }
 
-func newScanner(src string) *scanner {
-	return &scanner{0, 0, 1, src}
+func (s *scanner) init(src string) {
+	s.start = 0
+	s.current = 0
+	s.line = 1
+	s.src = src
 }
 
 func isAlpha(c byte) bool {
