@@ -62,21 +62,21 @@ func (s *scanner) scanToken() token {
 		}
 	case c == '=':
 		if s.match('=') {
-			return s.makeToken(tokenBangEqual)
+			return s.makeToken(tokenEqualEqual)
 		} else {
-			return s.makeToken(tokenBang)
+			return s.makeToken(tokenEqual)
 		}
 	case c == '<':
 		if s.match('=') {
-			return s.makeToken(tokenBangEqual)
+			return s.makeToken(tokenLessEqual)
 		} else {
-			return s.makeToken(tokenBang)
+			return s.makeToken(tokenLess)
 		}
 	case c == '>':
 		if s.match('=') {
-			return s.makeToken(tokenBangEqual)
+			return s.makeToken(tokenGreaterEqual)
 		} else {
-			return s.makeToken(tokenBang)
+			return s.makeToken(tokenGreater)
 		}
 	case c == '"':
 		return s.string()
@@ -143,7 +143,7 @@ func (s *scanner) identifierType() tokenType {
 	case 'i':
 		return s.checkKeyword(1, 1, "f", tokenIf)
 	case 'n':
-		return s.checkKeyword(1, 2, "il", tokennil)
+		return s.checkKeyword(1, 2, "il", tokenNil)
 	case 'o':
 		return s.checkKeyword(1, 1, "r", tokenOr)
 	case 'p':

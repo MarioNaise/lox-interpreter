@@ -26,7 +26,7 @@ const (
 )
 
 func repl() {
-	vm := newVM()
+	vm := new(vm)
 	s := bufio.NewScanner(os.Stdin)
 	for fmt.Print(replPrompt); s.Scan(); fmt.Print(replPrompt) {
 		text := s.Text()
@@ -38,7 +38,7 @@ func repl() {
 }
 
 func runFile(filePath string) {
-	vm := newVM()
+	vm := new(vm)
 	src, err := os.ReadFile(filePath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

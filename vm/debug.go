@@ -10,6 +10,7 @@ func (c *chunk) disassemble(s string) {
 	for offset := 0; offset < len(c.code); {
 		offset = c.disassembleInstruction(offset)
 	}
+	fmt.Println("========")
 }
 
 func (c *chunk) disassembleInstruction(offset int) int {
@@ -25,6 +26,18 @@ func (c *chunk) disassembleInstruction(offset int) int {
 	switch opCode(instruction) {
 	case opConstant:
 		return c.constantInstruction("OP_CONSTANT", offset)
+	case opNil:
+		return c.simpleInstruction("OP_NIL", offset)
+	case opTrue:
+		return c.simpleInstruction("OP_TRUE", offset)
+	case opFalse:
+		return c.simpleInstruction("OP_FALSE", offset)
+	case opEqual:
+		return c.simpleInstruction("OP_EQUAL", offset)
+	case opGreater:
+		return c.simpleInstruction("OP_GREATER", offset)
+	case opLess:
+		return c.simpleInstruction("OP_LESS", offset)
 	case opAdd:
 		return c.simpleInstruction("OP_ADD", offset)
 	case opSubtract:
@@ -33,6 +46,8 @@ func (c *chunk) disassembleInstruction(offset int) int {
 		return c.simpleInstruction("OP_MULTIPLY", offset)
 	case opDivide:
 		return c.simpleInstruction("OP_DIVIDE", offset)
+	case opNot:
+		return c.simpleInstruction("OP_NOT", offset)
 	case opNegate:
 		return c.simpleInstruction("OP_NEGATE", offset)
 	case opReturn:

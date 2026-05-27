@@ -4,10 +4,17 @@ type opCode byte
 
 const (
 	opConstant opCode = iota
+	opNil
+	opTrue
+	opFalse
+	opEqual
+	opGreater
+	opLess
 	opAdd
 	opSubtract
 	opMultiply
 	opDivide
+	opNot
 	opNegate
 	opReturn
 )

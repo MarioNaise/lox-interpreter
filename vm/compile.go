@@ -146,46 +146,46 @@ func endCompiler() {
 func getRule(tokenType tokenType) parseRule {
 	if rules == nil {
 		rules = []parseRule{
-			{grouping, nil, precNone}, // tokenLeftParen
-			{nil, nil, precNone},      // tokenRightParen
-			{nil, nil, precNone},      // tokenLeftBrace
-			{nil, nil, precNone},      // tokenRightBrace
-			{nil, nil, precNone},      // tokenComma
-			{nil, nil, precNone},      // tokenDot
-			{unary, binary, precTerm}, // tokenMinus
-			{nil, binary, precTerm},   // tokenPlus
-			{nil, nil, precNone},      // tokenSemicolon
-			{nil, binary, precFactor}, // tokenSlash
-			{nil, binary, precFactor}, // tokenStar
-			{nil, nil, precNone},      // tokenBang
-			{nil, nil, precNone},      // tokenBangEqual
-			{nil, nil, precNone},      // tokenEqual
-			{nil, nil, precNone},      // tokenEqualEqual
-			{nil, nil, precNone},      // tokenGreater
-			{nil, nil, precNone},      // tokenGreaterEqual
-			{nil, nil, precNone},      // tokenLess
-			{nil, nil, precNone},      // tokenLessEqual
-			{nil, nil, precNone},      // tokenIdentifier
-			{nil, nil, precNone},      // tokenString
-			{number, nil, precNone},   // tokenNumber
-			{nil, nil, precNone},      // tokenAnd
-			{nil, nil, precNone},      // tokenClass
-			{nil, nil, precNone},      // tokenElse
-			{nil, nil, precNone},      // tokenFalse
-			{nil, nil, precNone},      // tokenFor
-			{nil, nil, precNone},      // tokenFun
-			{nil, nil, precNone},      // tokenIf
-			{nil, nil, precNone},      // tokennil
-			{nil, nil, precNone},      // tokenOr
-			{nil, nil, precNone},      // tokenPrint
-			{nil, nil, precNone},      // tokenReturn
-			{nil, nil, precNone},      // tokenSuper
-			{nil, nil, precNone},      // tokenThis
-			{nil, nil, precNone},      // tokenTrue
-			{nil, nil, precNone},      // tokenVar
-			{nil, nil, precNone},      // tokenWhile
-			{nil, nil, precNone},      // tokenError
-			{nil, nil, precNone},      // tokenEOF
+			{grouping, nil, precNone},     // tokenLeftParen
+			{nil, nil, precNone},          // tokenRightParen
+			{nil, nil, precNone},          // tokenLeftBrace
+			{nil, nil, precNone},          // tokenRightBrace
+			{nil, nil, precNone},          // tokenComma
+			{nil, nil, precNone},          // tokenDot
+			{unary, binary, precTerm},     // tokenMinus
+			{nil, binary, precTerm},       // tokenPlus
+			{nil, nil, precNone},          // tokenSemicolon
+			{nil, binary, precFactor},     // tokenSlash
+			{nil, binary, precFactor},     // tokenStar
+			{unary, nil, precNone},        // tokenBang
+			{nil, binary, precEquality},   // tokenBangEqual
+			{nil, nil, precNone},          // tokenEqual
+			{nil, binary, precEquality},   // tokenEqualEqual
+			{nil, binary, precComparison}, // tokenGreater
+			{nil, binary, precComparison}, // tokenGreaterEqual
+			{nil, binary, precComparison}, // tokenLess
+			{nil, binary, precComparison}, // tokenLessEqual
+			{nil, nil, precNone},          // tokenIdentifier
+			{nil, nil, precNone},          // tokenString
+			{number, nil, precNone},       // tokenNumber
+			{nil, nil, precNone},          // tokenAnd
+			{nil, nil, precNone},          // tokenClass
+			{nil, nil, precNone},          // tokenElse
+			{literal, nil, precNone},      // tokenFalse
+			{nil, nil, precNone},          // tokenFor
+			{nil, nil, precNone},          // tokenFun
+			{nil, nil, precNone},          // tokenIf
+			{literal, nil, precNone},      // tokenNil
+			{nil, nil, precNone},          // tokenOr
+			{nil, nil, precNone},          // tokenPrint
+			{nil, nil, precNone},          // tokenReturn
+			{nil, nil, precNone},          // tokenSuper
+			{nil, nil, precNone},          // tokenThis
+			{literal, nil, precNone},      // tokenTrue
+			{nil, nil, precNone},          // tokenVar
+			{nil, nil, precNone},          // tokenWhile
+			{nil, nil, precNone},          // tokenError
+			{nil, nil, precNone},          // tokenEOF
 		}
 	}
 	return rules[tokenType]
@@ -197,6 +197,18 @@ func binary() {
 	parsePrecedence(parseRule.precedence + 1)
 
 	switch opType {
+	case tokenBangEqual:
+		emitBytes(byte(opEqual), byte(opNot))
+	case tokenEqualEqual:
+		emitByte(byte(opEqual))
+	case tokenGreater:
+		emitByte(byte(opGreater))
+	case tokenGreaterEqual:
+		emitBytes(byte(opLess), byte(opNot))
+	case tokenLess:
+		emitByte(byte(opLess))
+	case tokenLessEqual:
+		emitBytes(byte(opGreater), byte(opNot))
 	case tokenPlus:
 		emitByte(byte(opAdd))
 	case tokenMinus:
@@ -210,6 +222,19 @@ func binary() {
 	}
 }
 
+func literal() {
+	switch p.previous.tokenType {
+	case tokenFalse:
+		emitByte(byte(opFalse))
+	case tokenNil:
+		emitByte(byte(opNil))
+	case tokenTrue:
+		emitByte(byte(opTrue))
+	default:
+		panic("Invalid literal")
+	}
+}
+
 func grouping() {
 	expression()
 	consume(tokenRightParen, "Expect ')' after expression.")
@@ -220,7 +245,7 @@ func number() {
 	if err != nil {
 		panic("Invalid number")
 	}
-	emitConstant(value(val))
+	emitConstant(numberValue(val))
 }
 
 func unary() {
@@ -231,6 +256,8 @@ func unary() {
 
 	// Emit the operator instruction.
 	switch opType {
+	case tokenBang:
+		emitByte(byte(opNot))
 	case tokenMinus:
 		emitByte(byte(opNegate))
 	default:

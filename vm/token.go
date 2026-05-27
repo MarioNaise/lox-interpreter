@@ -42,7 +42,7 @@ const (
 	tokenFor
 	tokenFun
 	tokenIf
-	tokennil
+	tokenNil
 	tokenOr
 	tokenPrint
 	tokenReturn
