@@ -60,7 +60,7 @@ func (c *chunk) disassembleInstruction(offset int) int {
 
 func (c *chunk) constantInstruction(name string, offset int) int {
 	constant := (c.code)[offset+1]
-	fmt.Printf("%-16s %4d '%v'\n", name, constant, c.constants[constant])
+	fmt.Printf("%-16s %4d %v\n", name, constant, c.constants[constant])
 	return offset + 2
 }
 

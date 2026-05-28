@@ -115,10 +115,21 @@ func (vm *vm) peek(distance int) value {
 }
 
 func (vm *vm) binaryOp(operator opCode) interpretResult {
-	if !vm.peek(0).isNumber() || !vm.peek(1).isNumber() {
+	l := vm.peek(1)
+	r := vm.peek(0)
+
+	if (l.isString() || r.isString()) && operator == opAdd {
+		b := vm.pop().value
+		a := vm.pop().value
+		vm.push(stringValue(fmt.Sprintf("%v%v", a, b)))
+		return interpretOk
+	}
+
+	if !l.isNumber() || !r.isNumber() {
 		vm.runtimeError("Operands must be numbers.")
 		return interpretRuntimeError
 	}
+
 	b := vm.pop().value.(float64)
 	a := vm.pop().value.(float64)
 	switch operator {

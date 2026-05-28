@@ -166,7 +166,7 @@ func getRule(tokenType tokenType) parseRule {
 			{nil, binary, precComparison}, // tokenLess
 			{nil, binary, precComparison}, // tokenLessEqual
 			{nil, nil, precNone},          // tokenIdentifier
-			{nil, nil, precNone},          // tokenString
+			{str, nil, precNone},          // tokenString
 			{number, nil, precNone},       // tokenNumber
 			{nil, nil, precNone},          // tokenAnd
 			{nil, nil, precNone},          // tokenClass
@@ -246,6 +246,10 @@ func number() {
 		panic("Invalid number")
 	}
 	emitConstant(numberValue(val))
+}
+
+func str() {
+	emitConstant(stringValue(p.previous.lexeme[1 : len(p.previous.lexeme)-1]))
 }
 
 func unary() {
