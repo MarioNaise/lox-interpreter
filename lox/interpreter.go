@@ -168,46 +168,54 @@ func (i *interpreter) visitEquality(e *expressionEquality) any {
 }
 
 func (i *interpreter) visitComparison(e *expressionComparison) any {
-	left := i.parseFloat(e.expr())
-	right := i.parseFloat(e.next())
+	left := i.evaluate(e.expr())
+	right := i.evaluate(e.next())
+	l := i.parseFloat(left, e.expr())
+	r := i.parseFloat(right, e.next())
 	switch e.tokenType() {
 	case Less:
-		return left < right
+		return l < r
 	case LessEqual:
-		return left <= right
+		return l <= r
 	case Greater:
-		return left > right
+		return l > r
 	case GreaterEqual:
-		return left >= right
+		return l >= r
 	}
 	return nil
 }
 
 func (i *interpreter) visitTerm(e *expressionTerm) any {
+	left := i.evaluate(e.expr())
+	right := i.evaluate(e.next())
 	switch e.tokenType() {
 	case Plus:
-		if strVal, ok := i.evaluateToString(e); ok {
-			return strVal
+		_, okL := left.(string)
+		_, okR := right.(string)
+		if okL || okR {
+			return fmt.Sprintf("%v%v", left, right)
 		}
-		left := i.parseFloat(e.expr())
-		right := i.parseFloat(e.next())
-		return left + right
+		l := i.parseFloat(left, e.expr())
+		r := i.parseFloat(right, e.next())
+		return l + r
 	case Minus:
-		left := i.parseFloat(e.expr())
-		right := i.parseFloat(e.next())
-		return left - right
+		l := i.parseFloat(left, e.expr())
+		r := i.parseFloat(right, e.next())
+		return l - r
 	}
 	return 0
 }
 
 func (i *interpreter) visitFactor(e *expressionFactor) any {
-	left := i.parseFloat(e.expr())
-	right := i.parseFloat(e.next())
+	left := i.evaluate(e.expr())
+	right := i.evaluate(e.next())
+	l := i.parseFloat(left, e.expr())
+	r := i.parseFloat(right, e.next())
 	switch e.tokenType() {
 	case Star:
-		return left * right
+		return l * r
 	case Slash:
-		return left / right
+		return l / r
 	}
 	return ""
 }
@@ -217,7 +225,8 @@ func (i *interpreter) visitUnary(e *expressionUnary) any {
 	case Bang:
 		return !i.isTruthy(e.next())
 	case Minus:
-		val := i.parseFloat(e.next())
+		v := i.evaluate(e.next())
+		val := i.parseFloat(v, e.next())
 		return -val
 	default:
 		return false
@@ -336,18 +345,9 @@ func (i *interpreter) visitExpr(e *exp) any {
 	return ""
 }
 
-func (i *interpreter) evaluateToString(e expression) (string, bool) {
-	left := i.evaluate(e.expr())
-	right := i.evaluate(e.next())
-	return fmt.Sprintf("%v%v", left, right), fmt.Sprintf("%T", left) == "string" ||
-		fmt.Sprintf("%T", right) == "string"
-}
-
-func (i *interpreter) parseFloat(e expression) float64 {
-	n := i.evaluate(e)
-	switch n := n.(type) {
-	case float64:
-		return n
+func (i *interpreter) parseFloat(value any, e expression) float64 {
+	if num, ok := value.(float64); ok {
+		return num
 	}
 	err := newError(fmt.Sprintf("Operand must be a number: %v", e.lexeme()), e.token().line)
 	panic(err)
